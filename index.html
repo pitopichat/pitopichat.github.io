@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="tr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>P2P</title>
+        <link rel="shortcut icon" href="p2p.png" type="image/x-icon" />
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <sidebar class="open">
+            <div class="search">
+                <input id="searchId" placeholder="ID ara..." />
+                <!--<button id="qrCode">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-qr-code-icon lucide-qr-code"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg>
+                </button>-->
+            </div>
+            <div id="onlineUser"></div>
+        </sidebar>
+
+        <main>
+            <!-- Header -->
+            <header>
+                <div class="sidebarMenu" onclick="document.querySelector('sidebar.open').style.display = 'flex'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu-icon lucide-menu"><path d="M4 12h16"/><path d="M4 18h16"/><path d="M4 6h16"/></svg>
+                </div>
+                <div style="display: flex;flex-direction: row;align-items: center;">
+                    <!--<div class="header-info">
+                        <h1 id="my-id">...</h1>
+                    </div>-->
+                    <div class="avatar">
+                        <span class="avatar-fallback"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-icon lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                        <span class="online-indicator" id="status"></span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Chat Container -->
+            <div class="chat-container" id="chat-container">
+                <!-- Empty State (shown when no messages) -->
+                <div class="empty-state" id="empty-state">
+                    <div class="empty-state-icon">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </div>
+                    <h3>Start a conversation</h3>
+                    <p>Send a message to start chatting with the user</p>
+                </div>
+
+                <!-- Message List (initially hidden, shown when messages exist) -->
+                <div class="message-list" id="chat" style="display: none;">
+                    <!-- Messages will be added here dynamically -->
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-container">
+                <div class="input-form" id="chat-form">
+                    <div class="input-wrapper">
+                        <input type="text" class="input-field" id="msg" placeholder="Type a message..." />
+                        <label for="fileInput" class="attachment-button">
+                            <svg class="icon-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                            </svg>
+                        </label>
+                    </div>
+                    <button class="send-button" id="send-btn" onclick="sendMessage()" disabled>
+                        <svg class="icon-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <input type="file" id="fileInput" onchange="sendFile()" disabled style="display: none;" />
+        </main>
+
+        <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
+        <script>
+            const socket = io("http://192.168.0.15:3000");
+            let peer;
+            let dataChannel;
+            let receivedBuffers = [];
+            let incomingFileInfo = null;
+            let connectionStatus = false;
+
+            const myIdEl = document.getElementById("my-id");
+            const statusEl = document.getElementById("status");
+            const callBtn = document.getElementById("call-btn");
+            const sendBtn = document.getElementById("send-btn");
+            const fileBtn = document.getElementById("fileInput");
+            const chatBox = document.getElementById("chat");
+            const msgInput = document.getElementById("msg");
+            const messageList = document.getElementById("chat");
+            const emptyState = document.getElementById("empty-state");
+
+            msgInput.addEventListener("keypress", (event) => {
+                if (event.key === "Enter") {
+                    event.preventDefault(); // Enter tuşunun yeni satır oluşturmasını engelle
+                    sendMessage();
+                }
+            });
+
+            function createPeer() {
+                const p = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
+                p.onicecandidate = (e) => {
+                    if (e.candidate && remoteId) {
+                        socket.emit("send-ice-candidate", { targetId: remoteId, candidate: e.candidate });
+                    }
+                };
+                p.ondatachannel = (e) => {
+                    dataChannel = e.channel;
+                    setupChannel();
+                };
+                return p;
+            }
+
+            function setupChannel() {
+                sendBtn.disabled = false;
+                fileBtn.disabled = false;
+                dataChannel.onopen = () => updateStatus("Bağlantı kurdun");
+                dataChannel.onclose = () => updateStatus("Bağlantı kesildi");
+                dataChannel.onmessage = (e) => handleData(e.data);
+            }
+
+            socket.on("your-id", (id) => {
+                //myIdEl.textContent = id;
+                myId = id;
+            });
+
+            socket.on("online-users", (users) => {
+                const container = document.getElementById("onlineUser");
+                container.innerHTML = "";
+
+                users.forEach((user) => {
+                    if (user.id === myId) return;
+
+                    const div = document.createElement("div");
+                    div.classList.add("user");
+                    div.textContent = `${user.id}`;
+                    div.onclick = () => {
+                        startCall(user.id);
+                        if (window.innerWidth <= "768") {document.querySelector('sidebar.open').style.display = 'none';}
+                    };
+                    container.appendChild(div);
+                });
+            });
+
+            socket.on("incoming-call", async ({ from, offer }) => {
+                remoteId = from;
+
+                if (connectionStatus === true) {
+                    socket.emit("call-rejected", { targetId: remoteId, reason: "Meşgul" });
+                    return;
+                }
+                
+                peer = createPeer();
+                updateStatus("Yanıt veriyorsun...");
+                statusEl.style.backgroundColor = "orange";
+                await peer.setRemoteDescription(new RTCSessionDescription(offer));
+                const answer = await peer.createAnswer();
+                await peer.setLocalDescription(answer);
+                socket.emit("send-answer", { targetId: remoteId, answer });
+                connectionStatus = true;
+            });
+
+            socket.on("call-answered", async ({ answer }) => {
+                await peer.setRemoteDescription(new RTCSessionDescription(answer));
+                connectionStatus = true;
+            });
+
+            socket.on("call-rejected", async ({ reason }) => {
+                updateStatus("Bağlantı reddedildi: " + reason);
+                statusEl.style.backgroundColor = "red";
+            });
+
+            socket.on("ice-candidate", async ({ candidate }) => {
+                if (peer) {
+                    await peer.addIceCandidate(new RTCIceCandidate(candidate));
+                }
+            });
+
+            function startCall(id) {
+                const target = id;
+                if (!target) {
+                    alert("Lütfen bir hedef ID girin");
+                    return;
+                }
+                if (connectionStatus) {
+                    alert("Zaten bir sohbete bağlısın. Önceki sohbeti kaybeedeceksin.");
+                    return;
+                }
+                remoteId = target;
+                peer = createPeer();
+                dataChannel = peer.createDataChannel("chat");
+                setupChannel();
+                updateStatus("Bağlanıyorsun...");
+                statusEl.style.backgroundColor = "orange";
+                peer.createOffer().then((offer) => {
+                    peer.setLocalDescription(offer);
+                    socket.emit("call-user", { targetId: remoteId, offer });
+                    updateStatus("Bağlanıyorsun...");
+                    statusEl.style.backgroundColor = "orange";
+                });
+            }
+
+            function sendMessage() {
+                const text = msgInput.value.trim();
+                if (!text) return;
+                dataChannel.send(JSON.stringify({ type: "text", message: text }));
+                logMessage(text, "me");
+                msgInput.value = "";
+                if (emptyState.style.display !== 'none') {
+                    emptyState.style.display = 'none';
+                    messageList.style.display = 'flex';
+                }
+            }
+
+            function sendFile() {
+                const file = document.getElementById("fileInput").files[0];
+                if (!file || !dataChannel || dataChannel.readyState !== "open") return;
+
+                const chunkSize = 16 * 1024;
+                let offset = 0;
+                const reader = new FileReader();
+
+                // 1. Dosya bilgisi gönder
+                dataChannel.send(
+                    JSON.stringify({
+                        type: "file-info",
+                        name: file.name,
+                        size: file.size,
+                        mime: file.type,
+                    })
+                );
+
+                // 2. Gönderene uygun şekilde gösterim ekle
+                previewFileLocally(file, "me");
+
+                reader.onload = () => {
+                    const buffer = reader.result;
+                    while (offset < buffer.byteLength) {
+                        const chunk = buffer.slice(offset, offset + chunkSize);
+                        dataChannel.send(chunk);
+                        offset += chunkSize;
+                    }
+                    dataChannel.send("EOF");
+                };
+
+                reader.readAsArrayBuffer(file);
+                if (emptyState.style.display !== 'none') {
+                    emptyState.style.display = 'none';
+                    messageList.style.display = 'flex';
+                }
+            }
+
+            function previewFileLocally(file, from) {
+                const url = URL.createObjectURL(file);
+                const wrapper = document.createElement("div");
+                wrapper.className = `message-wrapper ${from === "me" ? "you" : "them"}`;
+                const container = document.createElement("div");
+                container.className = `msg ${from === "me" ? "you" : "them"}`;
+
+                if (file.type.startsWith("image/")) {
+                    const img = document.createElement("img");
+                    img.src = url;
+                    img.style.maxWidth = "200px";
+                    img.style.borderRadius = "10px";
+                    wrapper.appendChild(img);
+                } else if (file.type.startsWith("video/")) {
+                    const video = document.createElement("video");
+                    video.src = url;
+                    video.controls = true;
+                    video.style.maxWidth = "250px";
+                    img.style.borderRadius = "10px";
+                    wrapper.appendChild(video);
+                } else if (file.type.startsWith("audio/")) {
+                    const audio = document.createElement("audio");
+                    audio.src = url;
+                    audio.controls = true;
+                    wrapper.appendChild(audio);
+                } else {
+                    const link = document.createElement("a");
+                    link.href = url;
+                    link.download = file.name;
+                    link.textContent = `📄 ${file.name}`;
+                    link.style.background="#e5e7eb";
+                    link.style.padding = "1rem";
+                    link.style.borderRadius = "10px";
+                    link.style.textDecoration = "none";
+                    link.style.color = "#1d4ed8";
+                    wrapper.appendChild(link);
+                }
+
+                chatBox.appendChild(wrapper);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+
+            function handleData(data) {
+                if (typeof data === "string") {
+                    try {
+                        const msg = JSON.parse(data);
+                        if (msg.type === "text") logMessage(msg.message, "them");
+                        else if (msg.type === "file-info") {
+                            incomingFileInfo = msg;
+                            receivedBuffers = [];
+                        }
+                    } catch {
+                        if (data === "EOF" && incomingFileInfo) {
+                            const blob = new Blob(receivedBuffers, { type: incomingFileInfo.mime });
+                            const url = URL.createObjectURL(blob);
+                            const wrapper = document.createElement("div");
+                            wrapper.className = `message-wrapper them`;
+
+                            if (incomingFileInfo.mime.startsWith("image/")) {
+                                const img = document.createElement("img");
+                                img.src = url;
+                                img.style.maxWidth = "200px";
+                                img.style.marginTop = "10px";
+                                img.style.borderRadius = "10px";
+                                wrapper.appendChild(img);
+                            } else if (incomingFileInfo.mime.startsWith("audio/")) {
+                                const audio = document.createElement("audio");
+                                audio.controls = true;
+                                audio.src = url;
+                                audio.style.marginTop = "10px";
+                                wrapper.appendChild(audio);
+                            } else if (incomingFileInfo.mime.startsWith("video/")) {
+                                const video = document.createElement("video");
+                                video.controls = true;
+                                video.src = url;
+                                video.style.maxWidth = "200px";
+                                video.style.marginTop = "10px";
+                                video.style.borderRadius = "10px";
+                                wrapper.appendChild(video);
+                            } else {
+                                const link = document.createElement("a");
+                                link.href = url;
+                                link.download = incomingFileInfo.name;
+                                link.textContent = `📄 ${incomingFileInfo.name}`;
+                                link.style.background = "#e5e7eb";
+                                link.style.padding = "1rem";
+                                link.style.borderRadius = "10px";
+                                link.style.textDecoration = "none";
+                                link.style.color = "#1d4ed8";
+                                wrapper.appendChild(link);
+                            }
+
+                            chatBox.appendChild(wrapper);
+                            chatBox.scrollTop = chatBox.scrollHeight;
+                            incomingFileInfo = null;
+                            receivedBuffers = [];
+                            if (emptyState.style.display !== 'none') {
+                                emptyState.style.display = 'none';
+                                messageList.style.display = 'flex';
+                            }
+                        }
+                    }
+                } else {
+                    receivedBuffers.push(data);
+                }
+            }
+
+
+            function logMessage(text, from) {
+                const wrapper = document.createElement("div");
+                wrapper.className = `message-wrapper ${from === "me" ? "you" : "them"}`;
+
+                const msgDiv = document.createElement("div");
+                msgDiv.className = `msg ${from === "me" ? "you" : "them"}`;
+
+                const urlRegex = /(https?:\/\/[^\s]+)/g;
+                const processedText = text.replace(urlRegex, (url) => {
+                    return `<a href="${url}" target="_blank" style="text-decoration: underline;">${url}</a>`;
+                });
+
+                msgDiv.innerHTML = processedText;
+                wrapper.appendChild(msgDiv);
+                chatBox.appendChild(wrapper);
+                chatBox.scrollTop = chatBox.scrollHeight;
+                if (emptyState.style.display !== 'none') {
+                    emptyState.style.display = 'none';
+                    messageList.style.display = 'flex';
+                }
+            }
+
+            function updateStatus(text) {
+                //statusEl.textContent = text;
+                if (text == "Bağlantı kurdun") {
+                    statusEl.style.backgroundColor = "lightgreen";
+                } else if (text == "Bağlantı kesildi") {
+                    window.location.reload();
+                }
+            }
+        </script>
+    </body>
+</html>
