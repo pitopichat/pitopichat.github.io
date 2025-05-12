@@ -1,43 +1,122 @@
 <!DOCTYPE html>
 <html lang="tr">
     <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="description" content="Real-Time and Secure Peer to Peer Chat">
-        <meta property="og:title" content="P2P">
-        <meta property="og:description" content="Real-Time and Secure Peer to Peer Chat">
-        <meta property="og:url" content="https://devnar.github.io/">
-        <meta property="og:type" content="website">
-        <meta property="og:image" content="p2p.png">
-        <link rel="icon" href="p2p.png">
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="description" content="Real-Time and Secure Peer to Peer Chat" />
+        <meta property="og:title" content="P2P" />
+        <meta property="og:description" content="Real-Time and Secure Peer to Peer Chat" />
+        <meta property="og:url" content="https://devnar.github.io/" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="p2p.png" />
+        <link rel="icon" href="assets/p2p.png" />
         <title>P2P</title>
-        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="assets/style.css" />
     </head>
     <body>
-        <sidebar class="open">
+        <sidebar left class="open">
             <div class="search">
+                <div class="sidebarMenu" onclick="document.querySelector('sidebar[left].open').style.display = 'none'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x">
+                        <path d="M18 6 6 18" />
+                        <path d="m6 6 12 12" />
+                    </svg>
+                </div>
                 <input id="searchId" placeholder="ID ara..." />
-                <!--<button id="qrCode">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-qr-code-icon lucide-qr-code"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg>
-                </button>-->
             </div>
             <div id="onlineUser"></div>
         </sidebar>
 
+        <sidebar right class="open">
+        <div class="search">
+            <div class="profile-header">
+                    <div class="profile-info">
+                        <h3 id="my-id">John Doe</h3>
+                    </div>
+                </div>
+            <div class="sidebarMenu" onclick="document.querySelector('sidebar[right].open').style.display = 'none'">
+                
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x">
+                    <path d="M18 6 6 18" />
+                    <path d="m6 6 12 12" />
+                </svg>
+            </div>
+        </div>
+        
+        <div class="sidebar-content">
+            <div class="profile-section hidden">
+                <div class="profile-menu">
+                    <a href="#" class="profile-menu-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span>My Account</span>
+                    </a>
+                    <a href="#" class="profile-menu-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings">
+                            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <span>Settings</span>
+                    </a>
+                    <a href="#" class="profile-menu-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bell">
+                            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+                            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path>
+                        </svg>
+                        <span>Notifications</span>
+                    </a>
+                    <a href="#" class="profile-menu-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bookmark">
+                            <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path>
+                        </svg>
+                        <span>Saved Items</span>
+                    </a>
+                    <a href="#" class="profile-menu-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-help-circle">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <path d="M12 17h.01"></path>
+                        </svg>
+                        <span>Help & Support</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </sidebar>
+
         <main>
             <!-- Header -->
             <header>
-                <div class="sidebarMenu" onclick="document.querySelector('sidebar.open').style.display = 'flex'">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu-icon lucide-menu"><path d="M4 12h16"/><path d="M4 18h16"/><path d="M4 6h16"/></svg>
-                </div>
-                <div style="display: flex;flex-direction: row;align-items: center;">
-                    <!--<div class="header-info">
-                        <h1 id="my-id">...</h1>
-                    </div>-->
-                    <div class="avatar">
-                        <span class="avatar-fallback"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-icon lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-                        <span class="online-indicator" id="status"></span>
+                <div style="display: flex; flex-direction: row; align-items: center;">
+                    <div class="sidebarMenu" onclick="document.querySelector('sidebar.open').style.display = 'flex'">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-menu-icon lucide-menu"
+                        >
+                            <path d="M4 12h16" />
+                            <path d="M4 18h16" />
+                            <path d="M4 6h16" />
+                        </svg>
                     </div>
+                    <div class="header-info">
+                        <h1>P2P</h1>
+                    </div>
+                </div>
+                <div class="avatar" onclick="document.querySelector('sidebar[right].open').style.display = 'flex'">
+                    <span class="avatar-fallback">
+                        <img src="https://pbs.twimg.com/profile_images/1545518896874242055/s8icSRfU_400x400.jpg" id="my-pp">
+                    </span>
+                    <span class="online-indicator" id="status"></span>
                 </div>
             </header>
 
@@ -55,10 +134,7 @@
                     <p>Send a message to start chatting with the user</p>
                 </div>
 
-                <!-- Message List (initially hidden, shown when messages exist) -->
-                <div class="message-list" id="chat" style="display: none;">
-                    <!-- Messages will be added here dynamically -->
-                </div>
+                <div class="message-list" id="chat" style="display: none;"></div>
             </div>
 
             <!-- Input Area -->
@@ -83,325 +159,8 @@
 
             <input type="file" id="fileInput" onchange="sendFile()" disabled style="display: none;" />
         </main>
-
         <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
-        <script>
-            const socket = io("https://p2p-server.glitch.me");
-            let peer;
-            let dataChannel;
-            let receivedBuffers = [];
-            let incomingFileInfo = null;
-            let connectionStatus = false;
-
-            const myIdEl = document.getElementById("my-id");
-            const statusEl = document.getElementById("status");
-            const callBtn = document.getElementById("call-btn");
-            const sendBtn = document.getElementById("send-btn");
-            const fileBtn = document.getElementById("fileInput");
-            const chatBox = document.getElementById("chat");
-            const msgInput = document.getElementById("msg");
-            const messageList = document.getElementById("chat");
-            const emptyState = document.getElementById("empty-state");
-
-            msgInput.addEventListener("keypress", (event) => {
-                if (event.key === "Enter") {
-                    event.preventDefault(); // Enter tuşunun yeni satır oluşturmasını engelle
-                    sendMessage();
-                }
-            });
-
-            function createPeer() {
-                const p = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
-                p.onicecandidate = (e) => {
-                    if (e.candidate && remoteId) {
-                        socket.emit("send-ice-candidate", { targetId: remoteId, candidate: e.candidate });
-                    }
-                };
-                p.ondatachannel = (e) => {
-                    dataChannel = e.channel;
-                    setupChannel();
-                };
-                return p;
-            }
-
-            function setupChannel() {
-                sendBtn.disabled = false;
-                fileBtn.disabled = false;
-                dataChannel.onopen = () => updateStatus("Bağlantı kurdun");
-                dataChannel.onclose = () => updateStatus("Bağlantı kesildi");
-                dataChannel.onmessage = (e) => handleData(e.data);
-            }
-
-            socket.on("your-id", (id) => {
-                //myIdEl.textContent = id;
-                myId = id;
-            });
-
-            socket.on("online-users", (users) => {
-                const container = document.getElementById("onlineUser");
-                container.innerHTML = "";
-
-                users.forEach((user) => {
-                    if (user.id === myId) return;
-
-                    const div = document.createElement("div");
-                    div.classList.add("user");
-                    div.textContent = `${user.id}`;
-                    div.onclick = () => {
-                        startCall(user.id);
-                        if (window.innerWidth <= "768") {document.querySelector('sidebar.open').style.display = 'none';}
-                    };
-                    container.appendChild(div);
-                });
-            });
-
-            socket.on("incoming-call", async ({ from, offer }) => {
-                remoteId = from;
-
-                if (connectionStatus === true) {
-                    socket.emit("call-rejected", { targetId: remoteId, reason: "Meşgul" });
-                    return;
-                }
-                
-                peer = createPeer();
-                updateStatus("Yanıt veriyorsun...");
-                statusEl.style.backgroundColor = "orange";
-                await peer.setRemoteDescription(new RTCSessionDescription(offer));
-                const answer = await peer.createAnswer();
-                await peer.setLocalDescription(answer);
-                socket.emit("send-answer", { targetId: remoteId, answer });
-                connectionStatus = true;
-            });
-
-            socket.on("call-answered", async ({ answer }) => {
-                await peer.setRemoteDescription(new RTCSessionDescription(answer));
-                connectionStatus = true;
-            });
-
-            socket.on("call-rejected", async ({ reason }) => {
-                updateStatus("Bağlantı reddedildi: " + reason);
-                statusEl.style.backgroundColor = "red";
-            });
-
-            socket.on("ice-candidate", async ({ candidate }) => {
-                if (peer) {
-                    await peer.addIceCandidate(new RTCIceCandidate(candidate));
-                }
-            });
-
-            function startCall(id) {
-                const target = id;
-                if (!target) {
-                    alert("Lütfen bir hedef ID girin");
-                    return;
-                }
-                if (connectionStatus) {
-                    alert("Zaten bir sohbete bağlısın. Önceki sohbeti kaybeedeceksin.");
-                    return;
-                }
-                remoteId = target;
-                peer = createPeer();
-                dataChannel = peer.createDataChannel("chat");
-                setupChannel();
-                updateStatus("Bağlanıyorsun...");
-                statusEl.style.backgroundColor = "orange";
-                peer.createOffer().then((offer) => {
-                    peer.setLocalDescription(offer);
-                    socket.emit("call-user", { targetId: remoteId, offer });
-                    updateStatus("Bağlanıyorsun...");
-                    statusEl.style.backgroundColor = "orange";
-                });
-            }
-
-            function sendMessage() {
-                const text = msgInput.value.trim();
-                if (!text) return;
-                dataChannel.send(JSON.stringify({ type: "text", message: text }));
-                logMessage(text, "me");
-                msgInput.value = "";
-                if (emptyState.style.display !== 'none') {
-                    emptyState.style.display = 'none';
-                    messageList.style.display = 'flex';
-                }
-            }
-
-            function sendFile() {
-                const file = document.getElementById("fileInput").files[0];
-                if (!file || !dataChannel || dataChannel.readyState !== "open") return;
-
-                const chunkSize = 16 * 1024;
-                let offset = 0;
-                const reader = new FileReader();
-
-                // 1. Dosya bilgisi gönder
-                dataChannel.send(
-                    JSON.stringify({
-                        type: "file-info",
-                        name: file.name,
-                        size: file.size,
-                        mime: file.type,
-                    })
-                );
-
-                // 2. Gönderene uygun şekilde gösterim ekle
-                previewFileLocally(file, "me");
-
-                reader.onload = () => {
-                    const buffer = reader.result;
-                    while (offset < buffer.byteLength) {
-                        const chunk = buffer.slice(offset, offset + chunkSize);
-                        dataChannel.send(chunk);
-                        offset += chunkSize;
-                    }
-                    dataChannel.send("EOF");
-                };
-
-                reader.readAsArrayBuffer(file);
-                if (emptyState.style.display !== 'none') {
-                    emptyState.style.display = 'none';
-                    messageList.style.display = 'flex';
-                }
-            }
-
-            function previewFileLocally(file, from) {
-                const url = URL.createObjectURL(file);
-                const wrapper = document.createElement("div");
-                wrapper.className = `message-wrapper ${from === "me" ? "you" : "them"}`;
-                const container = document.createElement("div");
-                container.className = `msg ${from === "me" ? "you" : "them"}`;
-
-                if (file.type.startsWith("image/")) {
-                    const img = document.createElement("img");
-                    img.src = url;
-                    img.style.maxWidth = "200px";
-                    img.style.borderRadius = "10px";
-                    wrapper.appendChild(img);
-                } else if (file.type.startsWith("video/")) {
-                    const video = document.createElement("video");
-                    video.src = url;
-                    video.controls = true;
-                    video.style.maxWidth = "250px";
-                    img.style.borderRadius = "10px";
-                    wrapper.appendChild(video);
-                } else if (file.type.startsWith("audio/")) {
-                    const audio = document.createElement("audio");
-                    audio.src = url;
-                    audio.controls = true;
-                    wrapper.appendChild(audio);
-                } else {
-                    const link = document.createElement("a");
-                    link.href = url;
-                    link.download = file.name;
-                    link.textContent = `📄 ${file.name}`;
-                    link.style.background="#e5e7eb";
-                    link.style.padding = "1rem";
-                    link.style.borderRadius = "10px";
-                    link.style.textDecoration = "none";
-                    link.style.color = "#1d4ed8";
-                    wrapper.appendChild(link);
-                }
-
-                chatBox.appendChild(wrapper);
-                chatBox.scrollTop = chatBox.scrollHeight;
-            }
-
-            function handleData(data) {
-                if (typeof data === "string") {
-                    try {
-                        const msg = JSON.parse(data);
-                        if (msg.type === "text") logMessage(msg.message, "them");
-                        else if (msg.type === "file-info") {
-                            incomingFileInfo = msg;
-                            receivedBuffers = [];
-                        }
-                    } catch {
-                        if (data === "EOF" && incomingFileInfo) {
-                            const blob = new Blob(receivedBuffers, { type: incomingFileInfo.mime });
-                            const url = URL.createObjectURL(blob);
-                            const wrapper = document.createElement("div");
-                            wrapper.className = `message-wrapper them`;
-
-                            if (incomingFileInfo.mime.startsWith("image/")) {
-                                const img = document.createElement("img");
-                                img.src = url;
-                                img.style.maxWidth = "200px";
-                                img.style.marginTop = "10px";
-                                img.style.borderRadius = "10px";
-                                wrapper.appendChild(img);
-                            } else if (incomingFileInfo.mime.startsWith("audio/")) {
-                                const audio = document.createElement("audio");
-                                audio.controls = true;
-                                audio.src = url;
-                                audio.style.marginTop = "10px";
-                                wrapper.appendChild(audio);
-                            } else if (incomingFileInfo.mime.startsWith("video/")) {
-                                const video = document.createElement("video");
-                                video.controls = true;
-                                video.src = url;
-                                video.style.maxWidth = "200px";
-                                video.style.marginTop = "10px";
-                                video.style.borderRadius = "10px";
-                                wrapper.appendChild(video);
-                            } else {
-                                const link = document.createElement("a");
-                                link.href = url;
-                                link.download = incomingFileInfo.name;
-                                link.textContent = `📄 ${incomingFileInfo.name}`;
-                                link.style.background = "#e5e7eb";
-                                link.style.padding = "1rem";
-                                link.style.borderRadius = "10px";
-                                link.style.textDecoration = "none";
-                                link.style.color = "#1d4ed8";
-                                wrapper.appendChild(link);
-                            }
-
-                            chatBox.appendChild(wrapper);
-                            chatBox.scrollTop = chatBox.scrollHeight;
-                            incomingFileInfo = null;
-                            receivedBuffers = [];
-                            if (emptyState.style.display !== 'none') {
-                                emptyState.style.display = 'none';
-                                messageList.style.display = 'flex';
-                            }
-                        }
-                    }
-                } else {
-                    receivedBuffers.push(data);
-                }
-            }
-
-
-            function logMessage(text, from) {
-                const wrapper = document.createElement("div");
-                wrapper.className = `message-wrapper ${from === "me" ? "you" : "them"}`;
-
-                const msgDiv = document.createElement("div");
-                msgDiv.className = `msg ${from === "me" ? "you" : "them"}`;
-
-                const urlRegex = /(https?:\/\/[^\s]+)/g;
-                const processedText = text.replace(urlRegex, (url) => {
-                    return `<a href="${url}" target="_blank" style="text-decoration: underline;">${url}</a>`;
-                });
-
-                msgDiv.innerHTML = processedText;
-                wrapper.appendChild(msgDiv);
-                chatBox.appendChild(wrapper);
-                chatBox.scrollTop = chatBox.scrollHeight;
-                if (emptyState.style.display !== 'none') {
-                    emptyState.style.display = 'none';
-                    messageList.style.display = 'flex';
-                }
-            }
-
-            function updateStatus(text) {
-                //statusEl.textContent = text;
-                if (text == "Bağlantı kurdun") {
-                    statusEl.style.backgroundColor = "lightgreen";
-                } else if (text == "Bağlantı kesildi") {
-                    window.location.reload();
-                }
-            }
-        </script>
         <script async="" src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+        <script src="assets/app.js"></script>
     </body>
 </html>
