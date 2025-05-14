@@ -4,13 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Real-Time and Secure Peer to Peer Chat" />
-    <meta property="og:title" content="P2P" />
+    <meta property="og:title" content="Pitopi" />
     <meta property="og:description" content="Real-Time and Secure Peer to Peer Chat" />
     <meta property="og:url" content="https://devnar.github.io/" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="p2p.png" />
-    <link rel="icon" href="assets/p2p.png" />
-    <title>P2P</title>
+    <meta property="og:image" content="pitopi.png" />
+    <link rel="icon" href="assets/pitopi.png" />
+    <title>Pitopi</title>
     <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body>
@@ -62,7 +62,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu-icon lucide-menu"><path d="M4 12h16"/><path d="M4 18h16"/><path d="M4 6h16"/></svg>
                 </div>
                 <div class="header-info">
-                    <h1>P2P</h1>
+                    <img src="assets/pitopi.png" alt="logo">
                 </div>
             </div>
             <div class="avatar" onclick="document.querySelector('sidebar[right].open').style.display = 'flex'">
@@ -104,6 +104,7 @@
 
         <input type="file" id="fileInput" onchange="sendFile()" disabled style="display: none;" />
     </main>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
     <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
     <script src="assets/app.js"></script>
 </body>

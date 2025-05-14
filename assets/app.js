@@ -311,7 +311,7 @@ function handlePeerDisconnect() {
 
   // Update UI
   updateStatus("Bağlantı kesildi")
-  statusEl.style.backgroundColor = "red"
+  statusEl.style.backgroundColor = "#ef4444"
 
   // Show system message
   const systemMessage = "Karşı taraf bağlantıyı kapattı veya bağlantı kesildi."
@@ -347,13 +347,6 @@ function showSystemMessage(message) {
   const msgDiv = document.createElement("div")
   msgDiv.className = "msg system"
   msgDiv.textContent = message
-  msgDiv.style.backgroundColor = "#f0f0f0"
-  msgDiv.style.color = "#666"
-  msgDiv.style.textAlign = "center"
-  msgDiv.style.padding = "8px 12px"
-  msgDiv.style.borderRadius = "8px"
-  msgDiv.style.margin = "10px auto"
-  msgDiv.style.maxWidth = "80%"
 
   wrapper.appendChild(msgDiv)
   chatBox.appendChild(wrapper)
@@ -434,7 +427,7 @@ socket.on("call-answered", async ({ answer }) => {
 
 socket.on("call-rejected", async ({ reason }) => {
   updateStatus("Bağlantı reddedildi: " + reason)
-  statusEl.style.backgroundColor = "red"
+  statusEl.style.backgroundColor = "#ef4444"
 
   // Clean up the peer connection since the call was rejected
   if (activePeerConnection) {
@@ -523,55 +516,63 @@ function sendMessage() {
 }
 
 function sendFile() {
-  const file = document.getElementById("fileInput").files[0]
+  const file = document.getElementById("fileInput").files[0];
   if (!file || !dataChannel || dataChannel.readyState !== "open") {
-    if (file) showSystemMessage("Dosya gönderilemedi. Bağlantı kapalı.")
-    return
+    if (file) showSystemMessage("Dosya gönderilemedi. Bağlantı kapalı.");
+    return;
   }
 
-  const chunkSize = 16 * 1024
-  let offset = 0
-  const reader = new FileReader()
+  const chunkSize = 16 * 1024;
+  let offset = 0;
 
   try {
-    // Send file info
-    dataChannel.send(
-      JSON.stringify({
-        type: "file-info",
-        name: file.name,
-        size: file.size,
-        mime: file.type,
-      }),
-    )
+    // Dosya bilgilerini gönder
+    dataChannel.send(JSON.stringify({
+      type: "file-info",
+      name: file.name,
+      size: file.size,
+      mime: file.type
+    }));
 
-    // Preview file locally
-    previewFileLocally(file, "me")
+    previewFileLocally(file, "me");
 
-    reader.onload = () => {
-      try {
-        const buffer = reader.result
-        while (offset < buffer.byteLength) {
-          const chunk = buffer.slice(offset, offset + chunkSize)
-          dataChannel.send(chunk)
-          offset += chunkSize
-        }
-        dataChannel.send("EOF")
-      } catch (error) {
-        console.error("Error sending file chunks:", error)
-        showSystemMessage("Dosya gönderimi sırasında hata oluştu.")
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      if (dataChannel.readyState !== "open") {
+        showSystemMessage("Veri kanalı kapandı.");
+        return;
       }
-    }
+
+      const buffer = event.target.result;
+      dataChannel.send(buffer);
+      offset += chunkSize;
+
+      if (offset < file.size) {
+        readNextChunk(); // sıradaki parçayı oku
+      } else {
+        dataChannel.send("EOF");
+        console.log("Dosya gönderimi tamamlandı.");
+      }
+    };
 
     reader.onerror = (error) => {
-      console.error("Error reading file:", error)
-      showSystemMessage("Dosya okunamadı: " + error.message)
+      console.error("Dosya okunamadı:", error);
+      showSystemMessage("Dosya okunamadı: " + error.message);
+    };
+
+    function readNextChunk() {
+      const slice = file.slice(offset, offset + chunkSize);
+      reader.readAsArrayBuffer(slice);
     }
 
-    reader.readAsArrayBuffer(file)
-    showChat()
+    readNextChunk(); // ilk parçayı başlat
+
+    showChat();
+
   } catch (error) {
-    console.error("Error initiating file send:", error)
-    showSystemMessage("Dosya gönderimi başlatılamadı: " + error.message)
+    console.error("Dosya gönderimi başlatılamadı:", error);
+    showSystemMessage("Dosya gönderimi başlatılamadı: " + error.message);
   }
 }
 
@@ -717,7 +718,7 @@ function updateStatus(text) {
           }),
         )
   } else if (text == "Bağlantı kesildi") {
-    statusEl.style.backgroundColor = "red"
+    statusEl.style.backgroundColor = "#ef4444"
   }
 }
 

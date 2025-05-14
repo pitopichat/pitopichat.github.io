@@ -4,113 +4,27 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Real-Time and Secure Peer to Peer Chat" />
-    <meta property="og:title" content="P2P" />
+    <meta property="og:title" content="Pitopi" />
     <meta property="og:description" content="Real-Time and Secure Peer to Peer Chat" />
     <meta property="og:url" content="https://devnar.github.io/" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="p2p.png" />
-    <link rel="icon" href="assets/p2p.png" />
-    <title>P2P - Login</title>
+    <meta property="og:image" content="pitopi.png" />
+    <link rel="icon" href="assets/pitopi.png" />
+    <link rel="stylesheet" href="assets/style.css" />
+    <title>Pitopi - Login</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-        }
-        
         body {
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #f9fafb;
-        }
-        
-        .login-container {
-            width: 100%;
-            max-width: 400px;
-            padding: 2rem;
-            border-radius: 0.75rem;
-        }
-        
-        .login-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .login-header h1 {
-            font-size: 1.5rem;
-            color: #1f2937;
-            margin-bottom: 0.5rem;
-        }
-        
-        .login-header p {
-            color: #6b7280;
-        }
-        
-        .login-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-        
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        
-        .form-group label {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: #374151;
-        }
-        
-        .form-group input {
-            padding: 0.75rem;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        
-        .form-group input:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
-        }
-        
-        .login-button {
-            padding: 0.75rem;
-            background-color: #2563eb;
-            color: white;
-            border: none;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .login-button:hover {
-            background-color: #1d4ed8;
-        }
-        
-        .login-button:active {
-            background-color: #1e40af;
-        }
-        
-        .login-button:disabled {
-            background-color: #93c5fd;
-            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
     <div class="login-container">
         <div class="login-header">
-            <h1>P2P Chat</h1>
+            <h1>Pitopi Chat</h1>
             <p>Real-time and secure chat</p>
         </div>
         <form class="login-form" id="login-form">
