@@ -1,166 +1,160 @@
 <!DOCTYPE html>
 <html lang="tr">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="description" content="Real-Time and Secure Peer to Peer Chat" />
-        <meta property="og:title" content="P2P" />
-        <meta property="og:description" content="Real-Time and Secure Peer to Peer Chat" />
-        <meta property="og:url" content="https://devnar.github.io/" />
-        <meta property="og:type" content="website" />
-        <meta property="og:image" content="p2p.png" />
-        <link rel="icon" href="assets/p2p.png" />
-        <title>P2P</title>
-        <link rel="stylesheet" href="assets/style.css" />
-    </head>
-    <body>
-        <sidebar left class="open">
-            <div class="search">
-                <div class="sidebarMenu" onclick="document.querySelector('sidebar[left].open').style.display = 'none'">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x">
-                        <path d="M18 6 6 18" />
-                        <path d="m6 6 12 12" />
-                    </svg>
-                </div>
-                <input id="searchId" placeholder="ID ara..." />
-            </div>
-            <div id="onlineUser"></div>
-        </sidebar>
-
-        <sidebar right class="open">
-        <div class="search">
-            <div class="profile-header">
-                    <div class="profile-info">
-                        <h3 id="my-id">John Doe</h3>
-                    </div>
-                </div>
-            <div class="sidebarMenu" onclick="document.querySelector('sidebar[right].open').style.display = 'none'">
-                
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x">
-                    <path d="M18 6 6 18" />
-                    <path d="m6 6 12 12" />
-                </svg>
-            </div>
-        </div>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Real-Time and Secure Peer to Peer Chat" />
+    <meta property="og:title" content="P2P" />
+    <meta property="og:description" content="Real-Time and Secure Peer to Peer Chat" />
+    <meta property="og:url" content="https://devnar.github.io/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="p2p.png" />
+    <link rel="icon" href="assets/p2p.png" />
+    <title>P2P - Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        }
         
-        <div class="sidebar-content">
-            <div class="profile-section hidden">
-                <div class="profile-menu">
-                    <a href="#" class="profile-menu-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                        <span>My Account</span>
-                    </a>
-                    <a href="#" class="profile-menu-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings">
-                            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                        <span>Settings</span>
-                    </a>
-                    <a href="#" class="profile-menu-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bell">
-                            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
-                            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path>
-                        </svg>
-                        <span>Notifications</span>
-                    </a>
-                    <a href="#" class="profile-menu-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bookmark">
-                            <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path>
-                        </svg>
-                        <span>Saved Items</span>
-                    </a>
-                    <a href="#" class="profile-menu-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-help-circle">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                            <path d="M12 17h.01"></path>
-                        </svg>
-                        <span>Help & Support</span>
-                    </a>
-                </div>
-            </div>
+        body {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f9fafb;
+        }
+        
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .login-header h1 {
+            font-size: 1.5rem;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+        
+        .login-header p {
+            color: #6b7280;
+        }
+        
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .form-group label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .form-group input {
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .form-group input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+        }
+        
+        .login-button {
+            padding: 0.75rem;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .login-button:hover {
+            background-color: #1d4ed8;
+        }
+        
+        .login-button:active {
+            background-color: #1e40af;
+        }
+        
+        .login-button:disabled {
+            background-color: #93c5fd;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>P2P Chat</h1>
+            <p>Gerçek zamanlı ve güvenli sohbet</p>
         </div>
-    </sidebar>
-
-        <main>
-            <!-- Header -->
-            <header>
-                <div style="display: flex; flex-direction: row; align-items: center;">
-                    <div class="sidebarMenu" onclick="document.querySelector('sidebar.open').style.display = 'flex'">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            class="lucide lucide-menu-icon lucide-menu"
-                        >
-                            <path d="M4 12h16" />
-                            <path d="M4 18h16" />
-                            <path d="M4 6h16" />
-                        </svg>
-                    </div>
-                    <div class="header-info">
-                        <h1>P2P</h1>
-                    </div>
-                </div>
-                <div class="avatar" onclick="document.querySelector('sidebar[right].open').style.display = 'flex'">
-                    <span class="avatar-fallback">
-                        <img src="https://pbs.twimg.com/profile_images/1545518896874242055/s8icSRfU_400x400.jpg" id="my-pp">
-                    </span>
-                    <span class="online-indicator" id="status"></span>
-                </div>
-            </header>
-
-            <!-- Chat Container -->
-            <div class="chat-container" id="chat-container">
-                <!-- Empty State (shown when no messages) -->
-                <div class="empty-state" id="empty-state">
-                    <div class="empty-state-icon">
-                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="22" y1="2" x2="11" y2="13"></line>
-                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                        </svg>
-                    </div>
-                    <h3>Start a conversation</h3>
-                    <p>Send a message to start chatting with the user</p>
-                </div>
-
-                <div class="message-list" id="chat" style="display: none;"></div>
+        <form class="login-form" id="login-form">
+            <div class="form-group">
+                <label for="username">Kullanıcı Adı</label>
+                <input type="text" id="username" name="username" placeholder="Kullanıcı adınızı girin" required minlength="2" />
             </div>
-
-            <!-- Input Area -->
-            <div class="input-container">
-                <div class="input-form" id="chat-form">
-                    <div class="input-wrapper">
-                        <input type="text" class="input-field" id="msg" placeholder="Type a message..." />
-                        <label for="fileInput" class="attachment-button">
-                            <svg class="icon-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
-                            </svg>
-                        </label>
-                    </div>
-                    <button class="send-button" id="send-btn" onclick="sendMessage()" disabled>
-                        <svg class="icon-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="22" y1="2" x2="11" y2="13"></line>
-                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            <input type="file" id="fileInput" onchange="sendFile()" disabled style="display: none;" />
-        </main>
-        <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
-        <script async="" src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
-        <script src="assets/app.js"></script>
-    </body>
+            <button type="submit" class="login-button" id="login-button">Giriş Yap</button>
+        </form>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if user is already logged in
+            const savedUsername = localStorage.getItem('p2p_username');
+            if (savedUsername) {
+                window.location.href = 'chat.html';
+            }
+            
+            const loginForm = document.getElementById('login-form');
+            const usernameInput = document.getElementById('username');
+            const loginButton = document.getElementById('login-button');
+            
+            // Enable/disable login button based on input
+            usernameInput.addEventListener('input', () => {
+                loginButton.disabled = usernameInput.value.trim().length < 2;
+            });
+            
+            // Handle form submission
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const username = usernameInput.value.trim();
+                if (username.length >= 2) {
+                    // Save username to localStorage
+                    localStorage.setItem('p2p_username', username);
+                    
+                    // Redirect to chat page
+                    window.location.href = 'chat.html';
+                }
+            });
+        });
+    </script>
+</body>
 </html>
