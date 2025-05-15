@@ -374,8 +374,7 @@ socket.on("your-id", (id) => {
 
 socket.on("nickname-restricted", (message) => {
   alert(message || "Kullanıcı adınız yasaklı. Bağlantı sonlandırıldı.")
-  localStorage.removeItem("username")
-  window.location.href = "/index.html"
+  localStorage.removeItem("username");
 })
 
 socket.on("online-users", (users) => {
