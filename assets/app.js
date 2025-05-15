@@ -372,6 +372,12 @@ socket.on("your-id", (id) => {
   socket.emit("update-visibility", { hidden: hiddenFromSearch })
 })
 
+socket.on("nickname-restricted", (message) => {
+  alert(message || "Kullanıcı adınız yasaklı. Bağlantı sonlandırıldı.")
+  localStorage.removeItem("username")
+  window.location.href = "/index.html"
+})
+
 socket.on("online-users", (users) => {
   allUsers = users // Store all users
 
