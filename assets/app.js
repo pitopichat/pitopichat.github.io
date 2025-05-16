@@ -6,7 +6,9 @@ if (!savedUsername) {
 
 // Initialize with saved username
 const username = savedUsername;
-const profilePic = `https://avatar.iran.liara.run/username?username=${encodeURIComponent(username)}`;
+const savedBase64Pp = localStorage.getItem("p2p_pp_base64");
+const profilePic = savedBase64Pp || `https://pbs.twimg.com/profile_images/1545518896874242055/s8icSRfU_400x400.jpg`;
+
 
 // Initialize socket connection with authentication
 const socket = io("https://p2p-server.glitch.me/", {
@@ -42,6 +44,33 @@ const emptyState = document.getElementById("empty-state");
 const searchInput = document.getElementById("searchId");
 const logoutBtn = document.getElementById("logout-btn");
 const hideFromSearchBtn = document.getElementById("hide-from-search");
+const uploadPpBtn = document.getElementById("upload-pp-btn");
+const uploadPpInput = document.getElementById("upload-pp-input");
+
+if (uploadPpBtn && uploadPpInput) {
+    uploadPpBtn.addEventListener("click", () => {
+        uploadPpInput.click();
+    });
+
+    uploadPpInput.addEventListener("change", () => {
+        const file = uploadPpInput.files[0];
+        if (!file || !file.type.startsWith("image/")) {
+            showToast("Please select a valid image file.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            const base64Image = reader.result;
+            localStorage.setItem("p2p_pp_base64", base64Image);
+            myPpEl.src = base64Image;
+            showToast("Profile picture updated");
+            socket.emit("update-profile-pic", base64Image);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
 
 // Check if user was previously hidden from search
 hiddenFromSearch = localStorage.getItem("p2p_hidden") === "true";
@@ -200,7 +229,11 @@ function filterUsers(searchTerm) {
 
     const filteredUsers = allUsers.filter((user) => user.id !== myId && !user.hidden && (user.username.toLowerCase().includes(searchTerm) || user.id.toLowerCase().includes(searchTerm)));
 
-    renderUsers(filteredUsers);
+    if (filteredUsers.length == 0) {
+        container.innerHTML = "<span style='color: var(--muted-foreground)'>No users are currently online.</span>";
+    } else {
+        renderUsers(filteredUsers);
+    }
 }
 
 // Render users in the sidebar
@@ -610,12 +643,18 @@ function previewFileLocally(file, from) {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
+function playNotificationSound() {
+    const audio = document.getElementById("notification-sound");
+    if (audio) audio.play().catch(e => console.log("Audio play error:", e));
+}
+
 function handleData(data) {
     if (typeof data === "string") {
         try {
             const msg = JSON.parse(data);
             if (msg.type === "text") {
                 logMessage(msg.message, "them");
+                playNotificationSound()
             } else if (msg.type === "file-info") {
                 incomingFileInfo = msg;
                 receivedBuffers = [];
