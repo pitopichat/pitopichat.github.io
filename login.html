@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Real-Time and Secure Peer to Peer Chat" />
+    <meta property="og:title" content="Pitopi" />
+    <meta property="og:description" content="Real-Time and Secure Peer to Peer Chat" />
+    <meta property="og:url" content="https://devnar.github.io/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="pitopi.png" />
+    <link rel="icon" href="assets/pitopi.png" />
+    <link rel="stylesheet" href="assets/style.css" />
+    <title>Pitopi - Login</title>
+    <style>
+        body {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>Pitopi Chat</h1>
+            <p>Real-time and secure chat</p>
+        </div>
+        <form class="login-form" id="login-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter your username" required minlength="2" />
+            </div>
+            <button type="submit" class="login-button" id="login-button">Login</button>
+        </form>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if user is already logged in
+            const savedUsername = localStorage.getItem('p2p_username');
+            if (savedUsername) {
+                window.location.href = 'pitopi/';
+            }
+            
+            const loginForm = document.getElementById('login-form');
+            const usernameInput = document.getElementById('username');
+            const loginButton = document.getElementById('login-button');
+            
+            // Enable/disable login button based on input
+            usernameInput.addEventListener('input', () => {
+                loginButton.disabled = usernameInput.value.trim().length < 2;
+            });
+            
+            // Handle form submission
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const username = usernameInput.value.trim();
+                if (username.length >= 2) {
+                    // Save username to localStorage
+                    localStorage.setItem('p2p_username', username);
+                    
+                    // Redirect to chat page
+                    window.location.href = 'pitopi/';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 // Check if user is logged in
 const savedUsername = localStorage.getItem("p2p_username");
 if (!savedUsername) {
-    window.location.href = "index.html";
+    window.location.href = "login.html";
 }
 
 // Initialize with saved username
@@ -97,7 +97,7 @@ searchInput.addEventListener("input", () => {
 if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
         localStorage.removeItem("p2p_username");
-        window.location.href = "index.html";
+        window.location.href = "login.html";
     });
 }
 
