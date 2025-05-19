@@ -40,7 +40,7 @@
             // Check if user is already logged in
             const savedUsername = localStorage.getItem('p2p_username');
             if (savedUsername) {
-                window.location.href = '/pitopi';
+                window.location.href = '/';
             }
             
             const loginForm = document.getElementById('login-form');
@@ -62,7 +62,7 @@
                     localStorage.setItem('p2p_username', username);
                     
                     // Redirect to chat page
-                    window.location.href = '/pitopi';
+                    window.location.href = '/';
                 }
             });
         });
