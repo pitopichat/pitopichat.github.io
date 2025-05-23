@@ -32,7 +32,7 @@
                 <label for="username">Username</label>
                 <input type="text" id="username" name="username" placeholder="Enter your username" required minlength="2" />
             </div>
-            <button type="submit" class="login-button" id="login-button">Login</button>
+            <button type="submit" class="login-button" id="login-button" disabled>Login</button>
         </form>
     </div>
     <script>
@@ -41,6 +41,7 @@
             const savedUsername = localStorage.getItem('p2p_username');
             if (savedUsername) {
                 window.location.href = '/pitopi';
+                return;
             }
             
             const loginForm = document.getElementById('login-form');
