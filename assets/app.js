@@ -14,7 +14,7 @@ const CONNECTION_STATES = {
   DISCONNECTED: "Connection lost",
 }
 
-const SOCKET_SERVER = "https://p2p-server.glitch.me/"
+const SOCKET_SERVER = "https://pitopi.onrender.com"
 const DEFAULT_PROFILE_PIC = "https://pbs.twimg.com/profile_images/1545518896874242055/s8icSRfU_400x400.jpg"
 const STORY_DURATION = {
   IMAGE: 5000, // 5 seconds
