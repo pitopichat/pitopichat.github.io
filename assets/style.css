@@ -221,12 +221,6 @@ sidebar[right] {
   font-weight: 500;
 }
 
-.section-divider {
-  height: 1px;
-  background-color: var(--border);
-  margin: 0 1.5rem;
-}
-
 /* Story Modal */
 .story-modal {
   position: fixed;

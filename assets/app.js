@@ -1,11 +1,11 @@
 // Constants
 const STORAGE_KEYS = {
   USERNAME: "p2p_username",
+  PERSISTENT_USER_ID: "p2p_persistent_user_id",
   PROFILE_PIC: "p2p_pp_base64",
   HIDDEN: "p2p_hidden",
   REMOTE_ID: "p2p_remote_id",
   CONNECTION_STATUS: "p2p_connection_status",
-  CHAT_MESSAGES: "p2p_chat_messages",
 }
 
 const CONNECTION_STATES = {
@@ -27,18 +27,22 @@ if (!savedUsername) {
   window.location.href = "login.html"
 }
 
-// Initialize with saved username
+// Initialize with saved username and persistent user ID
 const username = savedUsername
 const savedBase64Pp = localStorage.getItem(STORAGE_KEYS.PROFILE_PIC)
 const profilePic = savedBase64Pp || DEFAULT_PROFILE_PIC
+const persistentUserId = localStorage.getItem(STORAGE_KEYS.PERSISTENT_USER_ID)
 
-// Initialize socket connection with authentication
+// Initialize socket connection with authentication including persistent user ID
 const socket = io(SOCKET_SERVER, {
+  transports: ['websocket'],
   auth: {
     username,
     profilePic,
-  },
+    persistentUserId,
+  }
 })
+
 
 // Global state
 const state = {
@@ -49,6 +53,7 @@ const state = {
   connectionStatus: localStorage.getItem(STORAGE_KEYS.CONNECTION_STATUS) === "true",
   remoteId: localStorage.getItem(STORAGE_KEYS.REMOTE_ID) || null,
   myId: null,
+  myPersistentId: null,
   allUsers: [],
   activePeerConnection: null,
   hiddenFromSearch: localStorage.getItem(STORAGE_KEYS.HIDDEN) === "true",
@@ -232,11 +237,11 @@ function renderStories(stories) {
   fragment.appendChild(yourStoryDiv)
 
   // Add other users' stories
-  Object.entries(stories).forEach(([userId, storyData]) => {
-    if (userId === state.myId) return
+  Object.entries(stories).forEach(([persistentUserId, storyData]) => {
+    if (persistentUserId === state.myPersistentId) return
 
     if (!storyData?.user || !storyData?.stories?.length) {
-      console.log("Missing story data:", userId, storyData)
+      console.log("Missing story data:", persistentUserId, storyData)
       return
     }
 
@@ -250,7 +255,7 @@ function renderStories(stories) {
       </div>
     `
 
-    storyDiv.onclick = () => openStoryModal(userId, userStories, user)
+    storyDiv.onclick = () => openStoryModal(persistentUserId, userStories, user)
     fragment.appendChild(storyDiv)
   })
 
@@ -260,7 +265,7 @@ function renderStories(stories) {
 }
 
 // Story modal functions
-function openStoryModal(userId, stories, user) {
+function openStoryModal(persistentUserId, stories, user) {
   if (!stories?.length) return
 
   state.currentUserStories = stories
@@ -277,7 +282,7 @@ function openStoryModal(userId, stories, user) {
   showStory(0)
 
   socket.emit("view-story", {
-    userId,
+    persistentUserId,
     storyId: stories[0].id,
   })
 }
@@ -405,6 +410,7 @@ function initUIEventListeners() {
   // Logout
   elements.logoutBtn?.addEventListener("click", () => {
     localStorage.removeItem(STORAGE_KEYS.USERNAME)
+    localStorage.removeItem(STORAGE_KEYS.PERSISTENT_USER_ID)
     window.location.href = "login.html"
   })
 
@@ -649,21 +655,28 @@ function showSystemMessage(message) {
   showChat()
 
   // Save chat messages
-  saveChatMessages()
 }
 
 // Socket event handlers
-socket.on("your-id", (id) => {
-  state.myId = id
-  elements.myId.setAttribute("dataId", id)
+socket.on("your-id", ({ socketId, persistentUserId }) => {
+  state.myId = socketId
+  state.myPersistentId = persistentUserId
+
+  // Save persistent user ID to localStorage
+  localStorage.setItem(STORAGE_KEYS.PERSISTENT_USER_ID, persistentUserId)
+
+  elements.myId.setAttribute("dataId", socketId)
   elements.myName.textContent = username
   elements.myPp.src = profilePic
   socket.emit("update-visibility", { hidden: state.hiddenFromSearch })
+
+  console.log(`Connected with socket ID: ${socketId}, persistent ID: ${persistentUserId}`)
 })
 
 socket.on("nickname-restricted", (message) => {
   alert(message || "Your username is restricted. Connection terminated.")
   localStorage.removeItem(STORAGE_KEYS.USERNAME)
+  localStorage.removeItem(STORAGE_KEYS.PERSISTENT_USER_ID)
 })
 
 socket.on("online-users", (users) => {
@@ -735,6 +748,9 @@ socket.on("call-answered", async ({ answer }) => {
 socket.on("call-rejected", ({ reason }) => {
   updateStatus("Connection rejected: " + reason)
   elements.status.style.backgroundColor = "#ef4444"
+  showToast("The person you are trying to connect to is busy")
+  localStorage.removeItem("p2p_remote_id")
+  
 
   state.activePeerConnection?.close()
   state.activePeerConnection = null
@@ -973,7 +989,6 @@ function handleData(data) {
         state.incomingFileInfo = null
         state.receivedBuffers = []
         showChat()
-        saveChatMessages() // Add this line
       }
     }
   } else {
@@ -1000,7 +1015,6 @@ function logMessage(text, from) {
   showChat()
 
   // Save chat messages
-  saveChatMessages()
 }
 
 function showChat() {
@@ -1073,58 +1087,6 @@ const sendPing = throttle(() => {
 
 setInterval(sendPing, 30000)
 
-// Save chat messages to localStorage
-function saveChatMessages() {
-  const messages = Array.from(elements.chat.children)
-    .map((wrapper) => {
-      const msgElement = wrapper.querySelector(".msg")
-      if (!msgElement) return null
-
-      const isYou = wrapper.classList.contains("you")
-      const isSystem = wrapper.classList.contains("system")
-      const text = msgElement.innerHTML
-
-      return { text, from: isYou ? "me" : isSystem ? "system" : "them" }
-    })
-    .filter(Boolean)
-
-  localStorage.setItem(STORAGE_KEYS.CHAT_MESSAGES, JSON.stringify(messages))
-}
-
-// Restore chat messages from localStorage
-function restoreChatMessages() {
-  const savedMessages = localStorage.getItem(STORAGE_KEYS.CHAT_MESSAGES)
-  if (!savedMessages) return
-
-  try {
-    const messages = JSON.parse(savedMessages)
-    if (Array.isArray(messages) && messages.length > 0) {
-      elements.emptyState.style.display = "none"
-      elements.messageList.style.display = "flex"
-
-      messages.forEach((msg) => {
-        if (msg.from === "system") {
-          showSystemMessage(msg.text)
-        } else {
-          const wrapper = document.createElement("div")
-          wrapper.className = `message-wrapper ${msg.from === "me" ? "you" : "them"}`
-
-          const msgDiv = document.createElement("div")
-          msgDiv.className = `msg ${msg.from === "me" ? "you" : "them"}`
-          msgDiv.innerHTML = msg.text
-
-          wrapper.appendChild(msgDiv)
-          elements.chat.appendChild(wrapper)
-        }
-      })
-
-      elements.chat.scrollTop = elements.chat.scrollHeight
-    }
-  } catch (error) {
-    console.error("Error restoring chat messages:", error)
-  }
-}
-
 // Initialize everything when DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
   initStoryFunctionality()
@@ -1136,9 +1098,6 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.hideFromSearchBtn.classList.add("hidden-from-search")
     elements.hideFromSearchBtn.querySelector("span").textContent = "Show in Search"
   }
-
-  // Restore chat messages
-  restoreChatMessages()
 
   // Attempt to reconnect if we have a saved connection
   if (state.connectionStatus && state.remoteId) {
