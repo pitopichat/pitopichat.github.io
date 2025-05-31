@@ -43,7 +43,6 @@ const socket = io(SOCKET_SERVER, {
   }
 })
 
-
 // Global state
 const state = {
   peer: null,
@@ -61,6 +60,8 @@ const state = {
   currentStoryIndex: 0,
   currentUserStories: [],
   storyTimer: null,
+  groups: [],
+  activeGroupId: null,
 }
 
 // DOM elements cache
@@ -88,9 +89,6 @@ const elements = {
   },
   get msgInput() {
     return document.getElementById("msg")
-  },
-  get messageList() {
-    return document.getElementById("chat")
   },
   get emptyState() {
     return document.getElementById("empty-state")
@@ -266,6 +264,7 @@ function renderStories(stories) {
 
 // Story modal functions
 function openStoryModal(persistentUserId, stories, user) {
+  elements.storyProgressBar.style.width = 0;
   if (!stories?.length) return
 
   state.currentUserStories = stories
@@ -319,7 +318,9 @@ function showStory(index) {
   }
 
   const progress = ((index + 1) / state.currentUserStories.length) * 100
+  setTimeout(() => {
   progressBar.style.width = `${progress}%`
+}, 100);
 }
 
 function startStoryTimer(duration) {
@@ -525,8 +526,8 @@ function renderUsers(users) {
 
     const avatar = document.createElement("img")
     avatar.src = user.profilePic || "default.png"
-    avatar.width = 32
-    avatar.height = 32
+    avatar.width = 35
+    avatar.height = 35
     avatar.style.borderRadius = "50%"
     avatar.style.marginRight = "8px"
     avatar.loading = "lazy"
@@ -1020,7 +1021,7 @@ function logMessage(text, from) {
 function showChat() {
   if (elements.emptyState.style.display !== "none") {
     elements.emptyState.style.display = "none"
-    elements.messageList.style.display = "flex"
+    elements.chat.style.display = "flex"
   }
 }
 

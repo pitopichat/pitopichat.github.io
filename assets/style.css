@@ -120,8 +120,7 @@ sidebar[right] {
 
 /* Stories Section */
 .stories-section {
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--border);
+  padding: 0rem 1.5rem;
 }
 
 .stories-header {
@@ -253,6 +252,7 @@ sidebar[right] {
   padding: 1rem;
   background-color: var(--card);
   border-bottom: 1px solid var(--border);
+  z-index: 100;
 }
 
 .story-user-info {
@@ -262,8 +262,8 @@ sidebar[right] {
 }
 
 .story-user-info img {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -318,8 +318,8 @@ sidebar[right] {
 .story-progress-bar {
   height: 100%;
   background-color: var(--primary);
-  transition: width 0.3s ease;
-  width: 0%;
+  transition: width 5s ease;
+  width: 0px;
 }
 
 /* Sidebar content */
