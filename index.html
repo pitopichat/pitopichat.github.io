@@ -20,25 +20,19 @@
     <!-- Left Sidebar -->
     <sidebar left class="open">
         <div class="search">
-            <div class="sidebarMenu" onclick="document.querySelector('sidebar[left].open').style.display = 'none'">
+            <div class="sidebarMenu" onclick="closeSidebar('left')">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
             </div>
-            <input id="searchId" placeholder="ID/Name search..." />
+            <input id="searchId" placeholder="Kullanıcı ara..." />
         </div>
         
-        <!-- Stories Section -->
-        <div class="stories-section">
-            <div class="stories-header">
-                <h3 id="add-story-btn" title="Add Story"></h3>
+        <div class="online-users-section">
+            <div class="online-users-header">
+                <h3>Çevrimiçi Kullanıcılar</h3>
+                <span class="online-count" id="online-count">0</span>
             </div>
-            <div class="stories-container" id="stories-container">
-                <!-- Stories will be populated here -->
-            </div>
+            <div id="onlineUser"></div>
         </div>
-        
-        <div class="section-divider"></div>
-        
-        <div id="onlineUser"></div>
     </sidebar>
 
     <!-- Right Sidebar -->
@@ -47,10 +41,10 @@
             <div class="profile-header">
                 <div class="profile-info">
                     <h3 id="my-name">John Doe</h3>
-                    <p id="my-id" dataId="" class="user-id">Copy the ID</p>
+                    <p id="my-id" dataId="" class="user-id">ID'yi kopyala</p>
                 </div>
             </div>
-            <div class="sidebarMenu" onclick="document.querySelector('sidebar[right].open').style.display = 'none'">
+            <div class="sidebarMenu" onclick="closeSidebar('right')">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
             </div>
         </div>
@@ -59,16 +53,16 @@
                 <div class="profile-menu">
                     <a href="#" class="profile-menu-item" id="upload-pp-btn">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10l-3.1-3.1a2 2 0 0 0-2.814.014L6 21"/><path d="m14 19.5 3-3 3 3"/><path d="M17 22v-5.5"/><circle cx="9" cy="9" r="2"/></svg>
-                        <span>Upload Profile Picture</span>
+                        <span>Profil Fotoğrafı Yükle</span>
                     </a>
                     <input type="file" id="upload-pp-input" accept="image/*" style="display: none;" />
                     <a href="#" class="profile-menu-item" id="hide-from-search">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m13.5 8.5-5 5"/><path d="m8.5 8.5 5 5"/><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                        <span>Hide in Search</span>
+                        <span>Aramada Gizle</span>
                     </a>
                     <a href="#" class="profile-menu-item" id="logout-btn">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
-                        <span>Log Out</span>
+                        <span>Çıkış Yap</span>
                     </a>
                 </div>
             </div>
@@ -79,40 +73,91 @@
         <!-- Header -->
         <header>
             <div style="display: flex; flex-direction: row; align-items: center;">
-                <div class="sidebarMenu" onclick="document.querySelector('sidebar[left].open').style.display = 'flex'">
+                <div class="sidebarMenu" onclick="openSidebar('left')">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16"/><path d="M4 18h16"/><path d="M4 6h16"/></svg>
                 </div>
                 <div class="header-info">
                     <img src="assets/pitopi.png" alt="logo" width="50" height="50">
                 </div>
             </div>
-            <div class="avatar" onclick="document.querySelector('sidebar[right].open').style.display = 'flex'">
-                <span class="avatar-fallback">
-                    <img src="https://pbs.twimg.com/profile_images/1545518896874242055/s8icSRfU_400x400.jpg" id="my-pp" alt="Profile picture">
-                </span>
-                <span class="online-indicator" id="status"></span>
+            <div class="header-actions">
+                <div class="avatar" onclick="openSidebar('right')">
+                    <span class="avatar-fallback">
+                        <img src="https://pbs.twimg.com/profile_images/1545518896874242055/s8icSRfU_400x400.jpg" id="my-pp" alt="Profile picture">
+                    </span>
+                    <span class="online-indicator" id="status"></span>
+                </div>
             </div>
         </header>
 
-        <!-- Chat Container -->
-        <div class="chat-container" id="chat-container">
-            <!-- Empty State (shown when no messages) -->
-            <div class="empty-state" id="empty-state">
-                <div class="empty-state-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg>
+        <!-- Home Page -->
+        <div class="homepage" id="homepage">
+
+            <!-- Stories Grid -->
+            <div class="home-section">
+                <div class="section-header">
+                    <h3>Son Hikayeler</h3>
+                    <button class="section-action" onclick="document.getElementById('storyInput').click()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                        Hikaye Ekle
+                    </button>
                 </div>
-                <h3>Start a Chat</h3>
-                <p>Ready to chat? First, connect with a user using the menu on the left.</p>
+                <div class="stories-container" id="stories-grid">
+                    <!-- Stories will be populated here -->
+                </div>
             </div>
 
-            <div class="message-list" id="chat" style="display: none;"></div>
+            <!-- Online Users Grid -->
+            <div class="home-section">
+                <div class="section-header">
+                    <h3>Çevrimiçi Kişiler</h3>
+                    <button class="section-action" onclick="openSidebar('left');document.getElementById('searchId').focus();">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+                        Ara
+                    </button>
+                </div>
+                <div class="users-grid" id="users-grid">
+                    <!-- Users will be populated here -->
+                </div>
+            </div>
+
+            <!-- Quick Stats 
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-online">0</div>
+                    <div class="stat-label">Çevrimiçi Kullanıcı</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-stories">0</div>
+                    <div class="stat-label">Aktif Hikaye</div>
+                </div>
+            </div>-->
+        </div>
+
+        <!-- Chat Container -->
+        <div class="chat-container" id="chat-container" style="display: none;">
+            <!-- Chat Header -->
+            <div class="chat-header" id="chat-header">
+                <div class="chat-user-info">
+                    <img id="chat-user-avatar" src="https://pbs.twimg.com/profile_images/1545518896874242055/s8icSRfU_400x400.jpg" alt="User Avatar">
+                    <div>
+                        <h4 id="chat-user-name"></h4>
+                        <span id="chat-user-status">Çevrimiçi</span>
+                    </div>
+                </div>
+                <button class="leave-chat-btn" onclick="leaveChat()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+
+            <div class="message-list" id="chat"></div>
         </div>
 
         <!-- Input Area -->
-        <div class="input-container">
+        <div class="input-container" id="input-container">
             <div class="input-form" id="chat-form">
                 <div class="input-wrapper">
-                    <input type="text" class="input-field" id="msg" placeholder="Type a message..." />
+                    <input type="text" class="input-field" id="msg" placeholder="Mesaj yazın..." />
                     <label for="fileInput" class="attachment-button">
                         <svg class="icon-small" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.234 20.252 21 12.3"/><path d="m16 6-8.414 8.586a2 2 0 0 0 0 2.828 2 2 0 0 0 2.828 0l8.414-8.586a4 4 0 0 0 0-5.656 4 4 0 0 0-5.656 0l-8.415 8.585a6 6 0 1 0 8.486 8.486"/></svg>
                     </label>

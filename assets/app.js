@@ -9,9 +9,9 @@ const STORAGE_KEYS = {
 }
 
 const CONNECTION_STATES = {
-  CONNECTED: "Connection established",
-  CONNECTING: "Connecting...",
-  DISCONNECTED: "Connection lost",
+  CONNECTED: "Bağlantı kuruldu",
+  CONNECTING: "Bağlanıyor...",
+  DISCONNECTED: "Bağlantı kaybedildi",
 }
 
 const SOCKET_SERVER = "https://pitopi.onrender.com"
@@ -62,6 +62,8 @@ const state = {
   storyTimer: null,
   groups: [],
   activeGroupId: null,
+  currentView: "home", // "home" or "chat"
+  selectedUser: null,
 }
 
 // DOM elements cache
@@ -90,8 +92,14 @@ const elements = {
   get msgInput() {
     return document.getElementById("msg")
   },
-  get emptyState() {
-    return document.getElementById("empty-state")
+  get homepage() {
+    return document.getElementById("homepage")
+  },
+  get chatContainer() {
+    return document.getElementById("chat-container")
+  },
+  get inputContainer() {
+    return document.getElementById("input-container")
   },
   get searchInput() {
     return document.getElementById("searchId")
@@ -144,6 +152,94 @@ const elements = {
   get onlineUser() {
     return document.getElementById("onlineUser")
   },
+  get storiesGrid() {
+    return document.getElementById("stories-grid")
+  },
+  get usersGrid() {
+    return document.getElementById("users-grid")
+  },
+  get totalOnline() {
+    return document.getElementById("total-online")
+  },
+  get totalStories() {
+    return document.getElementById("total-stories")
+  },
+  get onlineCount() {
+    return document.getElementById("online-count")
+  },
+  get chatUserAvatar() {
+    return document.getElementById("chat-user-avatar")
+  },
+  get chatUserName() {
+    return document.getElementById("chat-user-name")
+  },
+  get chatHeader() {
+    return document.getElementById("chat-header")
+  }
+}
+
+// View Management
+function showHomePage() {
+  state.currentView = "home"
+  state.selectedUser = null
+  
+  elements.homepage.style.display = "block"
+  elements.chatContainer.style.display = "none"
+  elements.inputContainer.style.display = "none"
+  
+  // Clear chat
+  elements.chat.innerHTML = ""
+  
+  // Update URL without page reload
+  history.pushState({ view: "home" }, "", window.location.pathname)
+  
+  // Disconnect if connected
+  if (state.connectionStatus) {
+    handlePeerDisconnect()
+  }
+}
+
+function showChatPage(user) {
+  state.currentView = "chat"
+  state.selectedUser = user
+  
+  elements.homepage.style.display = "none"
+  elements.chatContainer.style.display = "flex"
+  elements.inputContainer.style.display = "block"
+  
+  // Update chat header
+  elements.chatUserAvatar.src = user.profilePic || DEFAULT_PROFILE_PIC
+  elements.chatUserName.textContent = user.username
+  
+  // Update URL without page reload
+  history.pushState({ view: "chat", user: user.id }, "", window.location.pathname + "?chat=" + user.id)
+  
+  // Start connection
+  startCall(user.id)
+}
+
+function leaveChat() {
+  showHomePage()
+  showToast("Sohbetten ayrıldınız")
+}
+
+// Sidebar Management
+function openSidebar(side) {
+  const sidebar = document.querySelector(`sidebar[${side}]`)
+  if (sidebar) {
+    sidebar.style.display = "flex"
+    if (window.innerWidth <= 800) {
+      document.body.classList.add("sidebar-open")
+    }
+  }
+}
+
+function closeSidebar(side) {
+  const sidebar = document.querySelector(`sidebar[${side}]`)
+  if (sidebar) {
+    sidebar.style.display = "none"
+    document.body.classList.remove("sidebar-open")
+  }
 }
 
 // Utility functions
@@ -188,13 +284,13 @@ function handleStoryUpload() {
   if (!file) return
 
   if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
-    showToast("Please select an image or video file.")
+    showToast("Lütfen bir resim veya video dosyası seçin.")
     return
   }
 
   // Check file size (max 10MB)
   if (file.size > 10 * 1024 * 1024) {
-    showToast("File size must be less than 10MB.")
+    showToast("Dosya boyutu 10MB'dan küçük olmalıdır.")
     return
   }
 
@@ -209,9 +305,124 @@ function handleStoryUpload() {
       caption: "",
     })
 
-    showToast("Story uploaded successfully!")
+    showToast("Hikaye başarıyla yüklendi!")
   }
   reader.readAsDataURL(file)
+}
+
+// Render functions
+function renderHomePage() {
+  // Update stats
+  if (elements.totalOnline) {
+    elements.totalOnline.textContent = state.allUsers.filter(user => user.id !== state.myId && !user.hidden).length
+  }
+  if (elements.totalStories) {
+    elements.totalStories.textContent = Object.keys(state.currentStories).length
+  }
+  if (elements.onlineCount) {
+    elements.onlineCount.textContent = state.allUsers.filter(user => user.id !== state.myId && !user.hidden).length
+  }
+  
+  // Render stories grid
+  renderStoriesGrid()
+  
+  // Render users grid
+  renderUsersGrid()
+}
+
+function renderStoriesGrid() {
+  const container = elements.storiesGrid
+  if (!container) return
+
+  container.innerHTML = ""
+
+  // Add "Your Story" option
+  const yourStoryCard = document.createElement("div")
+  yourStoryCard.className = "story-card"
+  yourStoryCard.innerHTML = `
+    <div class="story-card-image" style="width: 150px; display: flex; align-items: center; justify-content: center; background-color: var(--secondary);">
+      <div style="text-align: center;">
+        <div class="story-avatar your-story" style="width: 50px; height: 50px; margin: 0 auto 10px;">
+          <img src="${profilePic}" alt="Your Story">
+          <div class="story-add-icon">+</div>
+        </div>
+        <span>Hikaye Ekle</span>
+      </div>
+    </div>
+    <div class="story-card-info">
+      <h4>Hikayeni Paylaş</h4>
+      <p>Şimdi ekle</p>
+    </div>
+  `
+  yourStoryCard.onclick = () => elements.storyInput.click()
+  container.appendChild(yourStoryCard)
+
+  Object.entries(state.currentStories).forEach(([persistentUserId, storyData]) => {
+    if (persistentUserId === state.myPersistentId) return
+    if (!storyData?.user || !storyData?.stories?.length) return
+
+    const { user, stories: userStories } = storyData
+    const latestStory = userStories[userStories.length - 1]
+
+    const storyCard = document.createElement("div")
+    storyCard.className = "story-card"
+    storyCard.innerHTML = `
+      <div class="story-card-image">
+        <img src="${latestStory.content}" alt="Story" loading="lazy">
+        <div class="story-card-user">
+          <img src="${user.profilePic || DEFAULT_PROFILE_PIC}" alt="${user.username}">
+          <span>${user.username}</span>
+        </div>
+      </div>
+      <div class="story-card-info">
+        <h4>${user.username}</h4>
+        <p>${getTimeAgo(latestStory.timestamp)}</p>
+      </div>
+    `
+
+    storyCard.onclick = () => openStoryModal(persistentUserId, userStories, user)
+    container.appendChild(storyCard)
+  })
+}
+
+function renderUsersGrid() {
+  const container = elements.usersGrid
+  if (!container) return
+
+  container.innerHTML = ""
+
+  // Show only first 6 users on homepage
+  const usersToShow = state.allUsers.filter(user => user.id !== state.myId && !user.hidden).slice(0, 6)
+
+  usersToShow.forEach((user) => {
+    const userCard = document.createElement("div")
+    userCard.className = "user-card"
+    userCard.innerHTML = `
+      <div class="user-card-header">
+        <div class="user-card-avatar">
+          <img src="${user.profilePic || DEFAULT_PROFILE_PIC}" alt="${user.username}" loading="lazy">
+          <div class="user-card-online"></div>
+        </div>
+        <div class="user-card-info">
+          <h4>${user.username}</h4>
+          <p>Şu anda çevrimiçi</p>
+        </div>
+      </div>
+      <button class="user-card-action">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg>
+        Sohbet Başlat
+      </button>
+    `
+
+    userCard.querySelector(".user-card-action").addEventListener("click", () => {
+      showChatPage(user)
+      if (window.innerWidth <= 800) {
+        closeSidebar('left')
+      }
+    })
+    
+    container.appendChild(userCard)
+  })
 }
 
 // Render stories with performance optimization
@@ -231,7 +442,7 @@ function renderStories(stories) {
       <div class="story-add-icon">+</div>
     </div>
   `
-  yourStoryDiv.onclick = () => elements.addStoryBtn.click()
+  yourStoryDiv.onclick = () => elements.storyInput.click()
   fragment.appendChild(yourStoryDiv)
 
   // Add other users' stories
@@ -319,8 +530,8 @@ function showStory(index) {
 
   const progress = ((index + 1) / state.currentUserStories.length) * 100
   setTimeout(() => {
-  progressBar.style.width = `${progress}%`
-}, 100);
+    progressBar.style.width = `${progress}%`
+  }, 100);
 }
 
 function startStoryTimer(duration) {
@@ -355,9 +566,9 @@ function getTimeAgo(timestamp) {
   const hours = Math.floor(diff / (1000 * 60 * 60))
   const minutes = Math.floor(diff / (1000 * 60))
 
-  if (hours > 0) return `${hours}h ago`
-  if (minutes > 0) return `${minutes}m ago`
-  return "Just now"
+  if (hours > 0) return `${hours} saat önce`
+  if (minutes > 0) return `${minutes} dakika önce`
+  return "Az önce"
 }
 
 // Profile picture upload
@@ -374,7 +585,7 @@ function initProfilePictureUpload() {
 function handleProfilePictureUpload() {
   const file = elements.uploadPpInput.files[0]
   if (!file?.type.startsWith("image/")) {
-    showToast("Please select a valid image file.")
+    showToast("Lütfen geçerli bir resim dosyası seçin.")
     return
   }
 
@@ -383,7 +594,7 @@ function handleProfilePictureUpload() {
     const base64Image = reader.result
     localStorage.setItem(STORAGE_KEYS.PROFILE_PIC, base64Image)
     elements.myPp.src = base64Image
-    showToast("Profile picture updated")
+    showToast("Profil resmi güncellendi")
     socket.emit("update-profile-pic", base64Image)
   }
   reader.readAsDataURL(file)
@@ -420,6 +631,20 @@ function initUIEventListeners() {
 
   // Copy ID functionality
   elements.myId?.addEventListener("click", copyIdToClipboard)
+  
+  // Handle browser back button
+  window.addEventListener("popstate", (event) => {
+    if (event.state?.view === "home" || !event.state) {
+      showHomePage()
+    } else if (event.state?.view === "chat" && event.state?.user) {
+      const user = state.allUsers.find(u => u.id === event.state.user)
+      if (user) {
+        showChatPage(user)
+      } else {
+        showHomePage()
+      }
+    }
+  })
 }
 
 function toggleSearchVisibility() {
@@ -431,12 +656,12 @@ function toggleSearchVisibility() {
 
   if (state.hiddenFromSearch) {
     btn.classList.add("hidden-from-search")
-    span.textContent = "Show in Search"
-    showToast("You are now hidden in search")
+    span.textContent = "Aramada Göster"
+    showToast("Artık aramada gizlisiniz")
   } else {
     btn.classList.remove("hidden-from-search")
-    span.textContent = "Hide in Search"
-    showToast("You are now visible in search")
+    span.textContent = "Aramada Gizle"
+    showToast("Artık aramada görünürsünüz")
   }
 
   socket.emit("update-visibility", { hidden: state.hiddenFromSearch })
@@ -463,14 +688,14 @@ async function copyIdToClipboard() {
     }
 
     elements.myId.classList.add("copied")
-    showToast("ID copied")
+    showToast("ID kopyalandı")
 
     setTimeout(() => {
       elements.myId.classList.remove("copied")
     }, 2000)
   } catch (err) {
     console.error("Copy failed:", err)
-    showToast("ID could not be copied. Please copy manually.")
+    showToast("ID kopyalanamadı. Lütfen manuel olarak kopyalayın.")
   }
 }
 
@@ -510,7 +735,7 @@ function filterUsers(searchTerm) {
   )
 
   if (filteredUsers.length === 0) {
-    container.innerHTML = "<span style='color: var(--muted-foreground)'>No users are currently online.</span>"
+    container.innerHTML = "<span style='color: var(--muted-foreground); padding: 0.75rem;'>Şu anda çevrimiçi kullanıcı yok.</span>"
   } else {
     renderUsers(filteredUsers)
   }
@@ -525,23 +750,30 @@ function renderUsers(users) {
     div.classList.add("user")
 
     const avatar = document.createElement("img")
-    avatar.src = user.profilePic || "default.png"
+    avatar.src = user.profilePic || DEFAULT_PROFILE_PIC
     avatar.width = 35
     avatar.height = 35
     avatar.style.borderRadius = "50%"
     avatar.style.marginRight = "8px"
     avatar.loading = "lazy"
+    avatar.classList.add("pp")
 
-    const label = document.createElement("span")
-    label.textContent = user.username
+    const userInfo = document.createElement("div")
+    userInfo.classList.add("user-info")
+    
+    const userName = document.createElement("div")
+    userName.classList.add("user-name")
+    userName.textContent = user.username
+    
+    userInfo.appendChild(userName)
 
     div.appendChild(avatar)
-    div.appendChild(label)
+    div.appendChild(userInfo)
 
     div.onclick = () => {
-      startCall(user.id)
-      if (window.innerWidth <= 768) {
-        document.querySelector("sidebar[left].open").style.display = "none"
+      showChatPage(user)
+      if (window.innerWidth <= 800) {
+        closeSidebar('left')
       }
     }
 
@@ -618,7 +850,7 @@ function handlePeerDisconnect() {
   updateStatus(CONNECTION_STATES.DISCONNECTED)
   elements.status.style.backgroundColor = "#ef4444"
 
-  showSystemMessage("The other party closed the connection or the connection was lost.")
+  showSystemMessage("Karşı taraf bağlantıyı kapattı veya bağlantı kaybedildi.")
 
   // Clean up resources
   state.dataChannel?.close()
@@ -640,6 +872,11 @@ function handlePeerDisconnect() {
 
   elements.sendBtn.disabled = true
   elements.fileBtn.disabled = true
+  
+  // Return to home page after a short delay
+  setTimeout(() => {
+    showHomePage()
+  }, 2000)
 }
 
 function showSystemMessage(message) {
@@ -653,9 +890,6 @@ function showSystemMessage(message) {
   wrapper.appendChild(msgDiv)
   elements.chat.appendChild(wrapper)
   elements.chat.scrollTop = elements.chat.scrollHeight
-  showChat()
-
-  // Save chat messages
 }
 
 // Socket event handlers
@@ -675,7 +909,7 @@ socket.on("your-id", ({ socketId, persistentUserId }) => {
 })
 
 socket.on("nickname-restricted", (message) => {
-  alert(message || "Your username is restricted. Connection terminated.")
+  alert(message || "Kullanıcı adınız kısıtlanmış. Bağlantı sonlandırıldı.")
   localStorage.removeItem(STORAGE_KEYS.USERNAME)
   localStorage.removeItem(STORAGE_KEYS.PERSISTENT_USER_ID)
 })
@@ -691,6 +925,7 @@ socket.on("online-users", (users) => {
   }
 
   filterUsers(elements.searchInput.value.toLowerCase().trim())
+  renderHomePage()
 })
 
 socket.on("user-disconnected", (userId) => {
@@ -702,9 +937,21 @@ socket.on("user-disconnected", (userId) => {
 socket.on("stories-updated", (stories) => {
   state.currentStories = stories
   renderStories(stories)
+  renderHomePage()
 })
 
 socket.on("incoming-call", async ({ from, offer }) => {
+  // Find user info
+  const caller = state.allUsers.find(user => user.id === from)
+  
+  if (!caller) {
+    socket.emit("call-rejected", {
+      targetId: from,
+      reason: "User not found",
+    })
+    return
+  }
+  
   state.remoteId = from
 
   if (state.connectionStatus) {
@@ -715,9 +962,23 @@ socket.on("incoming-call", async ({ from, offer }) => {
     return
   }
 
+  // Ask user if they want to accept the call
+  const confirmConnect = confirm(`${caller.username} sizinle bağlantı kurmak istiyor. Kabul ediyor musunuz?`)
+  
+  if (!confirmConnect) {
+    socket.emit("call-rejected", {
+      targetId: from,
+      reason: "Rejected",
+    })
+    return
+  }
+
   try {
+    // Show chat page with caller info
+    showChatPage(caller)
+    
     state.peer = createPeer()
-    updateStatus("You are responding...")
+    updateStatus("Yanıtlanıyor...")
     elements.status.style.backgroundColor = "orange"
 
     await state.peer.setRemoteDescription(new RTCSessionDescription(offer))
@@ -730,6 +991,7 @@ socket.on("incoming-call", async ({ from, offer }) => {
     })
 
     state.connectionStatus = true
+    localStorage.setItem(STORAGE_KEYS.REMOTE_ID, from)
   } catch (error) {
     console.error("Error handling incoming call:", error)
     handlePeerDisconnect()
@@ -747,16 +1009,18 @@ socket.on("call-answered", async ({ answer }) => {
 })
 
 socket.on("call-rejected", ({ reason }) => {
-  updateStatus("Connection rejected: " + reason)
+  updateStatus("Bağlantı reddedildi: " + reason)
   elements.status.style.backgroundColor = "#ef4444"
-  showToast("The person you are trying to connect to is busy")
+  showToast("Bağlanmaya çalıştığınız kişi meşgul veya bağlantıyı reddetti")
   localStorage.removeItem("p2p_remote_id")
   
-
   state.activePeerConnection?.close()
   state.activePeerConnection = null
   state.connectionStatus = false
   state.remoteId = null
+  
+  // Return to home page
+  showHomePage()
 })
 
 socket.on("ice-candidate", async ({ candidate }) => {
@@ -772,13 +1036,13 @@ socket.on("ice-candidate", async ({ candidate }) => {
 // Connection and messaging functions
 async function startCall(id) {
   if (!id) {
-    alert("Please enter a target ID")
+    alert("Lütfen bir hedef ID girin")
     return
   }
 
   if (state.connectionStatus) {
     const confirmReconnect = confirm(
-      "You are already connected to a chat. Do you want to close the previous chat and establish a new connection?",
+      "Zaten bir sohbete bağlısınız. Önceki sohbeti kapatıp yeni bir bağlantı kurmak istiyor musunuz?"
     )
     if (!confirmReconnect) return
     handlePeerDisconnect()
@@ -814,7 +1078,7 @@ function sendMessage() {
   if (!text) return
 
   if (!state.dataChannel || state.dataChannel.readyState !== "open") {
-    showSystemMessage("Message could not be sent. Connection closed.")
+    showSystemMessage("Mesaj gönderilemedi. Bağlantı kapalı.")
     return
   }
 
@@ -823,22 +1087,21 @@ function sendMessage() {
       JSON.stringify({
         type: "text",
         message: text,
-      }),
+      })
     )
 
     logMessage(text, "me")
     elements.msgInput.value = ""
-    showChat()
   } catch (error) {
     console.error("Error sending message:", error)
-    showSystemMessage("Message could not be sent: " + error.message)
+    showSystemMessage("Mesaj gönderilemedi: " + error.message)
   }
 }
 
 function sendFile() {
   const file = elements.fileBtn.files[0]
   if (!file || !state.dataChannel || state.dataChannel.readyState !== "open") {
-    if (file) showSystemMessage("File could not be sent. Connection closed.")
+    if (file) showSystemMessage("Dosya gönderilemedi. Bağlantı kapalı.")
     return
   }
 
@@ -852,7 +1115,7 @@ function sendFile() {
         name: file.name,
         size: file.size,
         mime: file.type,
-      }),
+      })
     )
 
     previewFileLocally(file, "me")
@@ -861,7 +1124,7 @@ function sendFile() {
 
     reader.onload = (event) => {
       if (state.dataChannel.readyState !== "open") {
-        showSystemMessage("Data channel closed.")
+        showSystemMessage("Veri kanalı kapalı.")
         return
       }
 
@@ -873,13 +1136,13 @@ function sendFile() {
         readNextChunk()
       } else {
         state.dataChannel.send("EOF")
-        console.log("File transfer completed.")
+        console.log("Dosya transferi tamamlandı.")
       }
     }
 
     reader.onerror = (error) => {
-      console.error("File could not be read:", error)
-      showSystemMessage("File could not be read: " + error.message)
+      console.error("Dosya okunamadı:", error)
+      showSystemMessage("Dosya okunamadı: " + error.message)
     }
 
     function readNextChunk() {
@@ -888,10 +1151,9 @@ function sendFile() {
     }
 
     readNextChunk()
-    showChat()
   } catch (error) {
-    console.error("File transfer could not be initiated:", error)
-    showSystemMessage("File transfer could not be initiated: " + error.message)
+    console.error("Dosya transferi başlatılamadı:", error)
+    showSystemMessage("Dosya transferi başlatılamadı: " + error.message)
   }
 }
 
@@ -989,7 +1251,7 @@ function handleData(data) {
         elements.chat.scrollTop = elements.chat.scrollHeight
         state.incomingFileInfo = null
         state.receivedBuffers = []
-        showChat()
+        playNotificationSound()
       }
     }
   } else {
@@ -1013,26 +1275,16 @@ function logMessage(text, from) {
   wrapper.appendChild(msgDiv)
   elements.chat.appendChild(wrapper)
   elements.chat.scrollTop = elements.chat.scrollHeight
-  showChat()
-
-  // Save chat messages
-}
-
-function showChat() {
-  if (elements.emptyState.style.display !== "none") {
-    elements.emptyState.style.display = "none"
-    elements.chat.style.display = "flex"
-  }
 }
 
 function updateStatus(text) {
   if (text === CONNECTION_STATES.CONNECTED) {
-    elements.status.style.backgroundColor = "lightgreen"
+    elements.status.style.backgroundColor = "#1b7959"
     state.dataChannel?.send(
       JSON.stringify({
         type: "system",
-        message: "Connection Established.",
-      }),
+        message: "Bağlantı Kuruldu.",
+      })
     )
   } else if (text === CONNECTION_STATES.DISCONNECTED) {
     elements.status.style.backgroundColor = "#ef4444"
@@ -1097,15 +1349,18 @@ document.addEventListener("DOMContentLoaded", () => {
   // Set initial visibility state
   if (state.hiddenFromSearch && elements.hideFromSearchBtn) {
     elements.hideFromSearchBtn.classList.add("hidden-from-search")
-    elements.hideFromSearchBtn.querySelector("span").textContent = "Show in Search"
+    elements.hideFromSearchBtn.querySelector("span").textContent = "Aramada Göster"
   }
+  
+  // Show homepage by default
+  showHomePage()
 
   // Attempt to reconnect if we have a saved connection
   if (state.connectionStatus && state.remoteId) {
     // Update UI to show we're trying to reconnect
     updateStatus(CONNECTION_STATES.CONNECTING)
     elements.status.style.backgroundColor = "orange"
-    showSystemMessage("Attempting to reconnect to previous session...")
+    showSystemMessage("Önceki oturuma yeniden bağlanmaya çalışılıyor...")
 
     // We'll attempt to reconnect once we have our socket ID
     socket.on("your-id", () => {
@@ -1122,3 +1377,7 @@ document.addEventListener("DOMContentLoaded", () => {
 window.sendMessage = sendMessage
 window.sendFile = sendFile
 window.closeStoryModal = closeStoryModal
+window.openSidebar = openSidebar
+window.closeSidebar = closeSidebar
+window.showHomePage = showHomePage
+window.leaveChat = leaveChat
