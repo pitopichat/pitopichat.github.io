@@ -35,12 +35,12 @@ const persistentUserId = localStorage.getItem(STORAGE_KEYS.PERSISTENT_USER_ID)
 
 // Initialize socket connection with authentication including persistent user ID
 const socket = io(SOCKET_SERVER, {
-  transports: ['websocket'],
+  transports: ["websocket"],
   auth: {
     username,
     profilePic,
     persistentUserId,
-  }
+  },
 })
 
 // Global state
@@ -61,9 +61,11 @@ const state = {
   currentUserStories: [],
   storyTimer: null,
   groups: [],
+  myGroups: [],
   activeGroupId: null,
-  currentView: "home", // "home" or "chat"
+  currentView: "home",
   selectedUser: null,
+  selectedGroup: null,
 }
 
 // DOM elements cache
@@ -109,6 +111,9 @@ const elements = {
   },
   get hideFromSearchBtn() {
     return document.getElementById("hide-from-search")
+  },
+  get changeThema() {
+    return document.getElementById("change-thema")
   },
   get uploadPpBtn() {
     return document.getElementById("upload-pp-btn")
@@ -158,6 +163,12 @@ const elements = {
   get usersGrid() {
     return document.getElementById("users-grid")
   },
+  get groupsGrid() {
+    return document.getElementById("groups-grid")
+  },
+  get myGroups() {
+    return document.getElementById("myGroups")
+  },
   get totalOnline() {
     return document.getElementById("total-online")
   },
@@ -175,24 +186,151 @@ const elements = {
   },
   get chatHeader() {
     return document.getElementById("chat-header")
+  },
+  get groupInfoBtn() {
+    return document.getElementById("group-info-btn")
+  },
+}
+
+// Group Management Functions
+function showCreateGroupModal() {
+  document.getElementById("create-group-modal").style.display = "flex"
+  document.getElementById("group-name-input").focus()
+}
+
+function hideCreateGroupModal() {
+  document.getElementById("create-group-modal").style.display = "none"
+  document.getElementById("group-name-input").value = ""
+}
+
+function showJoinGroupModal() {
+  document.getElementById("join-group-modal").style.display = "flex"
+  document.getElementById("join-group-id-input").focus()
+}
+
+function hideJoinGroupModal() {
+  document.getElementById("join-group-modal").style.display = "none"
+  document.getElementById("join-group-id-input").value = ""
+}
+
+function showGroupInfo() {
+  if (!state.selectedGroup) return
+
+  const modal = document.getElementById("group-info-modal")
+  const group = state.selectedGroup
+
+  document.getElementById("group-info-title").textContent = group.name
+  document.getElementById("group-info-id").textContent = group.id
+
+  // Gizlilik durumunu göster
+  const privacyStatus = group.isPrivate
+    ? '<span style="background: var(--muted); color: var(--muted-foreground); padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.8rem; margin-left: 0.5rem;">Gizli Grup</span>'
+    : '<span style="background: var(--secondary); color: var(--secondary-foreground); padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.8rem; margin-left: 0.5rem;">Açık Grup</span>'
+
+  document.getElementById("group-info-title").innerHTML += privacyStatus
+  document.getElementById("group-member-count").textContent = group.members.length
+
+  // Render members list
+  const membersList = document.getElementById("group-members-list")
+  membersList.innerHTML = ""
+
+  group.members.forEach((member) => {
+    const memberDiv = document.createElement("div")
+    memberDiv.style.cssText =
+      "display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; border-radius: 0.5rem; margin-bottom: 0.25rem;"
+
+    memberDiv.innerHTML = `
+      <img src="${member.profilePic || DEFAULT_PROFILE_PIC}" alt="${member.username}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+      <div>
+        <div style="font-weight: 500;">${member.username}</div>
+        ${member.id === group.createdBy ? '<div style="font-size: 0.75rem; color: var(--primary);">Grup Kurucusu</div>' : ""}
+      </div>
+    `
+
+    membersList.appendChild(memberDiv)
+  })
+
+  modal.style.display = "flex"
+}
+
+function hideGroupInfoModal() {
+  document.getElementById("group-info-modal").style.display = "none"
+}
+
+function copyGroupId() {
+  const groupId = document.getElementById("group-info-id").textContent
+
+  if (!navigator.clipboard) {
+    showToast("Clipboard API desteklenmiyor")
+    return
   }
+  
+  navigator.clipboard.writeText(groupId)
+    .then(() => {
+      showToast("Grup ID kopyalandı")
+    })
+    .catch(() => {
+      showToast("Kopyalama başarısız")
+    })
+}
+
+function createGroup() {
+  const name = document.getElementById("group-name-input").value.trim()
+  const isPrivate = document.getElementById("group-private-checkbox").checked
+
+  if (!name) {
+    showToast("Grup adı gereklidir")
+    return
+  }
+
+  socket.emit("create-group", {
+    name,
+    isPrivate,
+  })
+
+  hideCreateGroupModal()
+}
+
+function joinGroup() {
+  const groupId = document.getElementById("join-group-id-input").value.trim()
+
+  if (!groupId) {
+    showToast("Grup ID gereklidir")
+    return
+  }
+
+  socket.emit("join-group", { groupId })
+  hideJoinGroupModal()
+}
+
+function leaveGroup() {
+  if (!state.selectedGroup) return
+
+  const confirmLeave = confirm(`"${state.selectedGroup.name}" grubundan ayrılmak istediğinizden emin misiniz?`)
+  if (!confirmLeave) return
+
+  socket.emit("leave-group", { groupId: state.selectedGroup.id })
+  hideGroupInfoModal()
+  showHomePage()
 }
 
 // View Management
 function showHomePage() {
   state.currentView = "home"
   state.selectedUser = null
-  
+  state.selectedGroup = null
+
   elements.homepage.style.display = "block"
   elements.chatContainer.style.display = "none"
   elements.inputContainer.style.display = "none"
-  
+  elements.groupInfoBtn.style.display = "none"
+
   // Clear chat
   elements.chat.innerHTML = ""
-  
+
   // Update URL without page reload
   history.pushState({ view: "home" }, "", window.location.pathname)
-  
+
   // Disconnect if connected
   if (state.connectionStatus) {
     handlePeerDisconnect()
@@ -202,23 +340,57 @@ function showHomePage() {
 function showChatPage(user) {
   state.currentView = "chat"
   state.selectedUser = user
-  
+  state.selectedGroup = null
+
   elements.homepage.style.display = "none"
   elements.chatContainer.style.display = "flex"
   elements.inputContainer.style.display = "block"
-  
+  elements.groupInfoBtn.style.display = "none"
+
   // Update chat header
   elements.chatUserAvatar.src = user.profilePic || DEFAULT_PROFILE_PIC
   elements.chatUserName.textContent = user.username
-  
+
   // Update URL without page reload
   history.pushState({ view: "chat", user: user.id }, "", window.location.pathname + "?chat=" + user.id)
-  
+
   // Start connection
   startCall(user.id)
 }
 
+function showGroupChatPage(group) {
+  state.currentView = "group"
+  state.selectedUser = null
+  state.selectedGroup = group
+
+  elements.homepage.style.display = "none"
+  elements.chatContainer.style.display = "flex"
+  elements.inputContainer.style.display = "block"
+  elements.groupInfoBtn.style.display = "flex"
+
+  document.getElementById("chat-user-status").innerText = state.selectedGroup.members.length + " üye";
+    
+  // Update chat header
+  elements.chatUserName.textContent = group.name
+
+  // Clear chat and load group messages
+  elements.chat.innerHTML = ""
+
+  // Enable send button for group chat
+  elements.sendBtn.disabled = false
+
+  // Join group room
+  socket.emit("join-group-room", { groupId: group.id })
+
+  // Update URL without page reload
+  history.pushState({ view: "group", groupId: group.id }, "", window.location.pathname + "?group=" + group.id)
+}
+
 function leaveChat() {
+  if (state.currentView === "group" && state.selectedGroup) {
+    socket.emit("leave-group-room", { groupId: state.selectedGroup.id })
+  }
+
   showHomePage()
   showToast("Sohbetten ayrıldınız")
 }
@@ -314,20 +486,112 @@ function handleStoryUpload() {
 function renderHomePage() {
   // Update stats
   if (elements.totalOnline) {
-    elements.totalOnline.textContent = state.allUsers.filter(user => user.id !== state.myId && !user.hidden).length
+    elements.totalOnline.textContent = state.allUsers.filter((user) => user.id !== state.myId && !user.hidden).length
   }
   if (elements.totalStories) {
     elements.totalStories.textContent = Object.keys(state.currentStories).length
   }
   if (elements.onlineCount) {
-    elements.onlineCount.textContent = state.allUsers.filter(user => user.id !== state.myId && !user.hidden).length
+    elements.onlineCount.textContent = state.allUsers.filter((user) => user.id !== state.myId && !user.hidden).length
   }
-  
+
   // Render stories grid
   renderStoriesGrid()
-  
+
+  // Render groups grid
+  renderGroupsGrid()
+
   // Render users grid
   renderUsersGrid()
+}
+
+function renderGroupsGrid() {
+  const container = elements.groupsGrid
+  if (!container) return
+
+  container.innerHTML = ""
+
+  if (state.groups.length === 0) {
+    return
+  }
+
+  // Show first 6 groups on homepage
+  const groupsToShow = state.groups.slice(0, 6)
+
+  groupsToShow.forEach((group) => {
+    const groupCard = document.createElement("div")
+    groupCard.className = "user-card"
+    groupCard.innerHTML = `
+      <div class="user-card-header">
+        <div class="user-card-avatar">
+          <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: var(--primary-foreground); font-weight: bold;">
+            ${group.name.charAt(0).toUpperCase()}
+          </div>
+        </div>
+        <div class="user-card-info">
+          <h4>${group.name} ${group.isPrivate ? '<span style="font-size: 0.7rem; background: var(--muted); color: var(--muted-foreground); padding: 0.1rem 0.3rem; border-radius: 0.25rem; margin-left: 0.3rem;">Gizli</span>' : ""}</h4>
+          <p>${group.members.length} üye</p>
+        </div>
+      </div>
+      <button class="user-card-action">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg>
+        Gruba Git
+      </button>
+    `
+
+    groupCard.querySelector(".user-card-action").addEventListener("click", () => {
+      showGroupChatPage(group)
+      if (window.innerWidth <= 800) {
+        closeSidebar("left")
+      }
+    })
+
+    container.appendChild(groupCard)
+  })
+}
+
+function renderMyGroups() {
+  const container = elements.myGroups
+  if (!container) return
+
+  container.innerHTML = ""
+
+  if (state.myGroups.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 1rem; color: var(--muted-foreground); font-size: 0.875rem;">
+        <p>Henüz grubunuz yok</p>
+      </div>
+    `
+    return
+  }
+
+  state.myGroups.forEach((group) => {
+    const groupDiv = document.createElement("div")
+    groupDiv.className = "user-card"
+    groupDiv.style.marginBottom = "0.5rem"
+    groupDiv.innerHTML = `
+      <div class="user-card-header">
+        <div class="user-card-avatar">
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: var(--primary-foreground); font-weight: bold; font-size: 0.75rem;">
+            ${group.name.charAt(0).toUpperCase()}
+          </div>
+        </div>
+        <div class="user-card-info">
+          <h4 style="font-size: 0.875rem;">${group.name}</h4>
+          <p style="font-size: 0.75rem;">${group.members.length} üye</p>
+        </div>
+      </div>
+    `
+
+    groupDiv.onclick = () => {
+      showGroupChatPage(group)
+      if (window.innerWidth <= 800) {
+        closeSidebar("left")
+      }
+    }
+
+    container.appendChild(groupDiv)
+  })
 }
 
 function renderStoriesGrid() {
@@ -340,18 +604,14 @@ function renderStoriesGrid() {
   const yourStoryCard = document.createElement("div")
   yourStoryCard.className = "story-card"
   yourStoryCard.innerHTML = `
-    <div class="story-card-image" style="width: 150px; display: flex; align-items: center; justify-content: center; background-color: var(--secondary);">
+    <div class="story-card-image" style="width: 120px; display: flex; align-items: center; justify-content: center; background-color: var(--secondary);">
       <div style="text-align: center;">
-        <div class="story-avatar your-story" style="width: 50px; height: 50px; margin: 0 auto 10px;">
+        <div class="story-avatar your-story" style="width: 40px; height: 40px; margin: 0 auto 10px;">
           <img src="${profilePic}" alt="Your Story">
-          <div class="story-add-icon">+</div>
+          <div class="story-add-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 12L17 12M12 17L12 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
         </div>
         <span>Hikaye Ekle</span>
       </div>
-    </div>
-    <div class="story-card-info">
-      <h4>Hikayeni Paylaş</h4>
-      <p>Şimdi ekle</p>
     </div>
   `
   yourStoryCard.onclick = () => elements.storyInput.click()
@@ -374,10 +634,6 @@ function renderStoriesGrid() {
           <span>${user.username}</span>
         </div>
       </div>
-      <div class="story-card-info">
-        <h4>${user.username}</h4>
-        <p>${getTimeAgo(latestStory.timestamp)}</p>
-      </div>
     `
 
     storyCard.onclick = () => openStoryModal(persistentUserId, userStories, user)
@@ -392,7 +648,7 @@ function renderUsersGrid() {
   container.innerHTML = ""
 
   // Show only first 6 users on homepage
-  const usersToShow = state.allUsers.filter(user => user.id !== state.myId && !user.hidden).slice(0, 6)
+  const usersToShow = state.allUsers.filter((user) => user.id !== state.myId && !user.hidden).slice(0, 6)
 
   usersToShow.forEach((user) => {
     const userCard = document.createElement("div")
@@ -417,10 +673,10 @@ function renderUsersGrid() {
     userCard.querySelector(".user-card-action").addEventListener("click", () => {
       showChatPage(user)
       if (window.innerWidth <= 800) {
-        closeSidebar('left')
+        closeSidebar("left")
       }
     })
-    
+
     container.appendChild(userCard)
   })
 }
@@ -475,7 +731,7 @@ function renderStories(stories) {
 
 // Story modal functions
 function openStoryModal(persistentUserId, stories, user) {
-  elements.storyProgressBar.style.width = 0;
+  elements.storyProgressBar.style.width = 0
   if (!stories?.length) return
 
   state.currentUserStories = stories
@@ -531,7 +787,7 @@ function showStory(index) {
   const progress = ((index + 1) / state.currentUserStories.length) * 100
   setTimeout(() => {
     progressBar.style.width = `${progress}%`
-  }, 100);
+  }, 100)
 }
 
 function startStoryTimer(duration) {
@@ -626,20 +882,24 @@ function initUIEventListeners() {
     window.location.href = "login.html"
   })
 
-  // Hide from search toggle
-  elements.hideFromSearchBtn?.addEventListener("click", toggleSearchVisibility)
-
   // Copy ID functionality
   elements.myId?.addEventListener("click", copyIdToClipboard)
-  
+
   // Handle browser back button
   window.addEventListener("popstate", (event) => {
     if (event.state?.view === "home" || !event.state) {
       showHomePage()
     } else if (event.state?.view === "chat" && event.state?.user) {
-      const user = state.allUsers.find(u => u.id === event.state.user)
+      const user = state.allUsers.find((u) => u.id === event.state.user)
       if (user) {
         showChatPage(user)
+      } else {
+        showHomePage()
+      }
+    } else if (event.state?.view === "group" && event.state?.groupId) {
+      const group = state.groups.find((g) => g.id === event.state.groupId)
+      if (group) {
+        showGroupChatPage(group)
       } else {
         showHomePage()
       }
@@ -666,6 +926,16 @@ function toggleSearchVisibility() {
 
   socket.emit("update-visibility", { hidden: state.hiddenFromSearch })
 }
+
+elements.hideFromSearchBtn?.addEventListener("click", toggleSearchVisibility)
+
+function changeThema() {
+  const currentTheme = document.documentElement.getAttribute("data-theme")
+  const newTheme = currentTheme === "dark" ? "light" : "dark"
+  document.documentElement.setAttribute("data-theme", newTheme)
+}
+
+elements.changeThema?.addEventListener("click", changeThema)
 
 async function copyIdToClipboard() {
   const idText = elements.myId.getAttribute("dataId") || state.myId
@@ -735,7 +1005,8 @@ function filterUsers(searchTerm) {
   )
 
   if (filteredUsers.length === 0) {
-    container.innerHTML = "<span style='color: var(--muted-foreground); padding: 0.75rem;'>Şu anda çevrimiçi kullanıcı yok.</span>"
+    container.innerHTML =
+      "<span style='color: var(--muted-foreground); padding: 0.75rem;'>Şu anda çevrimiçi kullanıcı yok.</span>"
   } else {
     renderUsers(filteredUsers)
   }
@@ -746,38 +1017,50 @@ function renderUsers(users) {
   const fragment = document.createDocumentFragment()
 
   users.forEach((user) => {
-    const div = document.createElement("div")
-    div.classList.add("user")
+    const userCard = document.createElement("div")
+    userCard.classList.add("user-card")
 
-    const avatar = document.createElement("img")
-    avatar.src = user.profilePic || DEFAULT_PROFILE_PIC
-    avatar.width = 35
-    avatar.height = 35
-    avatar.style.borderRadius = "50%"
-    avatar.style.marginRight = "8px"
-    avatar.loading = "lazy"
-    avatar.classList.add("pp")
+    const userCardHeader = document.createElement("div")
+    userCardHeader.classList.add("user-card-header")
 
-    const userInfo = document.createElement("div")
-    userInfo.classList.add("user-info")
-    
-    const userName = document.createElement("div")
-    userName.classList.add("user-name")
-    userName.textContent = user.username
-    
-    userInfo.appendChild(userName)
+    const avatarWrapper = document.createElement("div")
+    avatarWrapper.classList.add("user-card-avatar")
 
-    div.appendChild(avatar)
-    div.appendChild(userInfo)
+    const avatarImg = document.createElement("img")
+    avatarImg.src = user.profilePic || DEFAULT_PROFILE_PIC
+    avatarImg.alt = user.username
+    avatarImg.loading = "lazy"
 
-    div.onclick = () => {
+    const onlineIndicator = document.createElement("div")
+    onlineIndicator.classList.add("user-card-online")
+
+    avatarWrapper.appendChild(avatarImg)
+    avatarWrapper.appendChild(onlineIndicator)
+
+    const infoWrapper = document.createElement("div")
+    infoWrapper.classList.add("user-card-info")
+
+    const username = document.createElement("h4")
+    username.textContent = user.username
+
+    const statusText = document.createElement("p")
+    statusText.textContent = "Şu anda çevrimiçi"
+
+    infoWrapper.appendChild(username)
+    infoWrapper.appendChild(statusText)
+
+    userCard.appendChild(userCardHeader)
+    userCardHeader.appendChild(avatarWrapper)
+    userCardHeader.appendChild(infoWrapper)
+
+    userCard.onclick = () => {
       showChatPage(user)
       if (window.innerWidth <= 800) {
-        closeSidebar('left')
+        closeSidebar("left")
       }
     }
 
-    fragment.appendChild(div)
+    fragment.appendChild(userCard)
   })
 
   container.innerHTML = ""
@@ -872,7 +1155,7 @@ function handlePeerDisconnect() {
 
   elements.sendBtn.disabled = true
   elements.fileBtn.disabled = true
-  
+
   // Return to home page after a short delay
   setTimeout(() => {
     showHomePage()
@@ -940,10 +1223,53 @@ socket.on("stories-updated", (stories) => {
   renderHomePage()
 })
 
+// Group socket events
+socket.on("groups-updated", (groups) => {
+  state.groups = groups
+  renderHomePage()
+})
+
+socket.on("my-groups-updated", (myGroups) => {
+  state.myGroups = myGroups
+  renderMyGroups()
+})
+
+socket.on("group-created", (data) => {
+  showToast(`"${data.group.name}" grubu başarıyla oluşturuldu!`)
+  state.myGroups.push(data.group)
+  renderMyGroups()
+  renderHomePage()
+})
+
+socket.on("group-joined", (data) => {
+  showToast(`"${data.group.name}" grubuna katıldınız!`)
+  state.myGroups.push(data.group)
+  renderMyGroups()
+  renderHomePage()
+})
+
+socket.on("group-left", (data) => {
+  showToast(`"${data.groupName}" grubundan ayrıldınız`)
+  state.myGroups = state.myGroups.filter((g) => g.id !== data.groupId)
+  renderMyGroups()
+  renderHomePage()
+})
+
+socket.on("group-message", (data) => {
+  if (state.currentView === "group" && state.selectedGroup?.id === data.groupId) {
+    logGroupMessage(data.message, data.sender, "them")
+    playNotificationSound()
+  }
+})
+
+socket.on("group-error", (error) => {
+  showToast(error.message || "Grup işlemi başarısız")
+})
+
 socket.on("incoming-call", async ({ from, offer }) => {
   // Find user info
-  const caller = state.allUsers.find(user => user.id === from)
-  
+  const caller = state.allUsers.find((user) => user.id === from)
+
   if (!caller) {
     socket.emit("call-rejected", {
       targetId: from,
@@ -951,7 +1277,7 @@ socket.on("incoming-call", async ({ from, offer }) => {
     })
     return
   }
-  
+
   state.remoteId = from
 
   if (state.connectionStatus) {
@@ -964,7 +1290,7 @@ socket.on("incoming-call", async ({ from, offer }) => {
 
   // Ask user if they want to accept the call
   const confirmConnect = confirm(`${caller.username} sizinle bağlantı kurmak istiyor. Kabul ediyor musunuz?`)
-  
+
   if (!confirmConnect) {
     socket.emit("call-rejected", {
       targetId: from,
@@ -976,7 +1302,7 @@ socket.on("incoming-call", async ({ from, offer }) => {
   try {
     // Show chat page with caller info
     showChatPage(caller)
-    
+
     state.peer = createPeer()
     updateStatus("Yanıtlanıyor...")
     elements.status.style.backgroundColor = "orange"
@@ -1013,12 +1339,12 @@ socket.on("call-rejected", ({ reason }) => {
   elements.status.style.backgroundColor = "#ef4444"
   showToast("Bağlanmaya çalıştığınız kişi meşgul veya bağlantıyı reddetti")
   localStorage.removeItem("p2p_remote_id")
-  
+
   state.activePeerConnection?.close()
   state.activePeerConnection = null
   state.connectionStatus = false
   state.remoteId = null
-  
+
   // Return to home page
   showHomePage()
 })
@@ -1042,7 +1368,7 @@ async function startCall(id) {
 
   if (state.connectionStatus) {
     const confirmReconnect = confirm(
-      "Zaten bir sohbete bağlısınız. Önceki sohbeti kapatıp yeni bir bağlantı kurmak istiyor musunuz?"
+      "Zaten bir sohbete bağlısınız. Önceki sohbeti kapatıp yeni bir bağlantı kurmak istiyor musunuz?",
     )
     if (!confirmReconnect) return
     handlePeerDisconnect()
@@ -1077,6 +1403,18 @@ function sendMessage() {
   const text = elements.msgInput.value.trim()
   if (!text) return
 
+  if (state.currentView === "group" && state.selectedGroup) {
+    // Send group message
+    socket.emit("send-group-message", {
+      groupId: state.selectedGroup.id,
+      message: text,
+    })
+
+    logGroupMessage(text, { username, profilePic }, "me")
+    elements.msgInput.value = ""
+    return
+  }
+
   if (!state.dataChannel || state.dataChannel.readyState !== "open") {
     showSystemMessage("Mesaj gönderilemedi. Bağlantı kapalı.")
     return
@@ -1087,7 +1425,7 @@ function sendMessage() {
       JSON.stringify({
         type: "text",
         message: text,
-      })
+      }),
     )
 
     logMessage(text, "me")
@@ -1115,7 +1453,7 @@ function sendFile() {
         name: file.name,
         size: file.size,
         mime: file.type,
-      })
+      }),
     )
 
     previewFileLocally(file, "me")
@@ -1277,14 +1615,42 @@ function logMessage(text, from) {
   elements.chat.scrollTop = elements.chat.scrollHeight
 }
 
+function logGroupMessage(text, sender, from) {
+  const wrapper = document.createElement("div")
+  wrapper.className = `message-wrapper ${from === "me" ? "you" : "them"}`
+
+  const msgDiv = document.createElement("div")
+  msgDiv.className = `msg ${from === "me" ? "you" : "them"}`
+
+  if (from === "them") {
+    const senderInfo = document.createElement("div")
+    senderInfo.style.cssText =
+      "font-size: 0.75rem; color: var(--muted-foreground); margin-bottom: 0.25rem; font-weight: 500;"
+    senderInfo.textContent = sender.username
+    msgDiv.appendChild(senderInfo)
+  }
+
+  const messageContent = document.createElement("div")
+  const urlRegex = /(https?:\/\/[^\s]+)/g
+  const processedText = text.replace(urlRegex, (url) => {
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">${url}</a>`
+  })
+  messageContent.innerHTML = processedText
+  msgDiv.appendChild(messageContent)
+
+  wrapper.appendChild(msgDiv)
+  elements.chat.appendChild(wrapper)
+  elements.chat.scrollTop = elements.chat.scrollHeight
+}
+
 function updateStatus(text) {
   if (text === CONNECTION_STATES.CONNECTED) {
-    elements.status.style.backgroundColor = "#1b7959"
+    elements.status.style.backgroundColor = "var(--online)"
     state.dataChannel?.send(
       JSON.stringify({
         type: "system",
         message: "Bağlantı Kuruldu.",
-      })
+      }),
     )
   } else if (text === CONNECTION_STATES.DISCONNECTED) {
     elements.status.style.backgroundColor = "#ef4444"
@@ -1295,6 +1661,15 @@ function updateStatus(text) {
 document.addEventListener("click", (e) => {
   if (e.target === elements.storyModal) {
     closeStoryModal()
+  }
+  if (e.target === document.getElementById("create-group-modal")) {
+    hideCreateGroupModal()
+  }
+  if (e.target === document.getElementById("join-group-modal")) {
+    hideJoinGroupModal()
+  }
+  if (e.target === document.getElementById("group-info-modal")) {
+    hideGroupInfoModal()
   }
 })
 
@@ -1309,6 +1684,19 @@ document.addEventListener("keydown", (e) => {
     } else if (e.key === "ArrowLeft" && state.currentStoryIndex > 0) {
       state.currentStoryIndex--
       showStory(state.currentStoryIndex)
+    }
+  }
+
+  // Handle escape key for modals
+  if (e.key === "Escape") {
+    if (document.getElementById("create-group-modal").style.display === "flex") {
+      hideCreateGroupModal()
+    }
+    if (document.getElementById("join-group-modal").style.display === "flex") {
+      hideJoinGroupModal()
+    }
+    if (document.getElementById("group-info-modal").style.display === "flex") {
+      hideGroupInfoModal()
     }
   }
 })
@@ -1351,7 +1739,7 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.hideFromSearchBtn.classList.add("hidden-from-search")
     elements.hideFromSearchBtn.querySelector("span").textContent = "Aramada Göster"
   }
-  
+
   // Show homepage by default
   showHomePage()
 
@@ -1381,3 +1769,13 @@ window.openSidebar = openSidebar
 window.closeSidebar = closeSidebar
 window.showHomePage = showHomePage
 window.leaveChat = leaveChat
+window.showCreateGroupModal = showCreateGroupModal
+window.hideCreateGroupModal = hideCreateGroupModal
+window.showJoinGroupModal = showJoinGroupModal
+window.hideJoinGroupModal = hideJoinGroupModal
+window.showGroupInfo = showGroupInfo
+window.hideGroupInfoModal = hideGroupInfoModal
+window.copyGroupId = copyGroupId
+window.createGroup = createGroup
+window.joinGroup = joinGroup
+window.leaveGroup = leaveGroup

@@ -17,7 +17,8 @@
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   --ring: rgba(37, 99, 235, 0.2);
-  --online: #1b7959;
+  --online: #089b60;
+  --pending: #2b89b7;
   --typing-dot: #9ca3af;
   --scrollbar-track: #f1f1f1;
   --scrollbar-thumb: #c1c1c1;
@@ -25,7 +26,6 @@
 }
 
 [data-theme="dark"] {
-  /* Dark theme variables */
   --background: #111827;
   --foreground: #f9fafb;
   --card: #182332;
@@ -43,7 +43,8 @@
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   --ring: rgba(59, 130, 246, 0.2);
-  --online: #1b7959;
+  --online: #089b60;
+  --pending: #2b89b7;
   --typing-dot: #6b7280;
   --scrollbar-track: #1f2937;
   --scrollbar-thumb: #4b5563;
@@ -167,7 +168,7 @@ sidebar[right] {
   gap: 0.5rem;
   overflow-y: auto;
   justify-content: flex-start;
-  padding-bottom: 1.5rem;
+  padding-bottom: 1rem;
 }
 
 .story-item {
@@ -394,7 +395,7 @@ header {
 }
 
 .section-header h3 {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   font-weight: 600;
   color: var(--foreground);
 }
@@ -405,7 +406,7 @@ header {
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   background-color: var(--secondary);
-  color: var(--secondary-foreground);
+  color: var(--muted-foreground);
   border: 1px solid var(--border);
   border-radius: 0.5rem;
   cursor: pointer;
@@ -433,7 +434,6 @@ header {
 
 .story-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
 }
 
 .story-card-image {
@@ -442,7 +442,7 @@ header {
   background-color: var(--muted);
   position: relative;
   overflow: hidden;
-  border-radius: 0.75rem 0.75rem 0 0;
+  border-radius: 0.75rem;
 }
 
 .story-card-image img {
@@ -509,20 +509,18 @@ header {
 
 .user-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
 }
 
 .user-card-header {
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 1rem;
 }
 
 .user-card-avatar {
   position: relative;
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   flex-shrink: 0;
 }
 
@@ -537,10 +535,10 @@ header {
   position: absolute;
   bottom: 0;
   right: 0;
-  width: 16px;
-  height: 16px;
-  background-color: var(--online);
-  border: 3px solid var(--card);
+  width: 10px;
+  height: 10px;
+  background-color: var(--pending);
+  border: 2px solid var(--card);
   border-radius: 50%;
 }
 
@@ -570,6 +568,7 @@ header {
   transition: background-color 0.2s;
   width: 100%;
   justify-content: center;
+  margin-top: 1rem;
 }
 
 .user-card-action:hover {
@@ -622,11 +621,11 @@ header {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 0.5rem;
   background-color: var(--destructive);
   color: var(--destructive-foreground);
   border: none;
-  border-radius: 0.5rem;
+  border-radius: 0.6rem;
   cursor: pointer;
   transition: background-color 0.2s;
 }
@@ -708,7 +707,6 @@ header {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 0.75rem;
   cursor: pointer;
 }
 
@@ -738,7 +736,7 @@ header {
   left: 2px;
   width: 10px;
   height: 10px;
-  background-color: var(--online);
+  background-color: var(--pending);
   border: 2px solid var(--card);
   border-radius: 50%;
 }
@@ -781,44 +779,6 @@ sidebar .search input::placeholder {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-}
-
-.user {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.user:hover {
-  background-color: var(--accent);
-}
-
-.user img.pp {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.user-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.user-name {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--foreground);
-}
-
-.user-status {
-  font-size: 0.75rem;
-  color: var(--muted-foreground);
 }
 
 /* Input Container */
@@ -952,7 +912,7 @@ sidebar .search input::placeholder {
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.9);
-  z-index: 10000;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -960,7 +920,7 @@ sidebar .search input::placeholder {
 
 .story-modal-content {
   position: relative;
-  max-width: 400px;
+  width: 400px;
   max-height: 80vh;
   background-color: var(--card);
   border-radius: 1rem;
@@ -1097,7 +1057,7 @@ sidebar .search input::placeholder {
   background-color: var(--card);
   color: var(--foreground);
   padding: 10px 20px;
-  border-radius: 4px;
+  border-radius: 15px;
   font-size: 0.875rem;
   z-index: 9999;
   opacity: 0;
@@ -1145,19 +1105,6 @@ sidebar .search input::placeholder {
 
   .users-grid {
     grid-template-columns: 1fr;
-  }
-
-  .welcome-icon {
-    width: 60px;
-    height: 60px;
-  }
-
-  .welcome-section h2 {
-    font-size: 1.5rem;
-  }
-
-  .welcome-section p {
-    font-size: 1rem;
   }
 }
 
