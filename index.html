@@ -31,7 +31,9 @@
                 <h3>Çevrimiçi Kullanıcılar</h3>
                 <span class="online-count" id="online-count">0</span>
             </div>
-            <div id="onlineUser"></div>
+            <div id="onlineUser">
+                <div class="user-card"><div class="user-card-header"><div class="user-card-avatar"><img src="https://pbs.twimg.com/profile_images/1545518896874242055/s8icSRfU_400x400.jpg" alt="Tester" loading="lazy"><div class="user-card-online"></div></div><div class="user-card-info"><h4></h4><p></p></div></div></div>
+            </div>
         </div>
 
 
@@ -102,7 +104,17 @@
             <div class="home-section">
                 <button id="add-story-btn" style="display: none;">Hikaye Ekle</button>
                 <div class="stories-container" id="stories-grid">
-                    <!-- Stories will be populated here -->
+                    <div class="story-card">
+                        <div class="story-card-image" style="width: 120px; display: flex; align-items: center; justify-content: center; background-color: var(--secondary);">
+                        <div style="text-align: center;">
+                            <div class="story-avatar your-story" style="width: 40px; height: 40px; margin: 0 auto 10px;">
+                            <img src="https://pbs.twimg.com/profile_images/1545518896874242055/s8icSRfU_400x400.jpg" alt="Your Story">
+                            <div class="story-add-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 12L17 12M12 17L12 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg></div>
+                            </div>
+                            <span>Hikaye Ekle</span>
+                        </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -119,9 +131,8 @@
                         </button>
                     </div>
                 </div>
-                <div class="users-grid" id="myGroups"></div>
                 <div class="users-grid" id="groups-grid">
-                    <!-- Groups will be populated here -->
+                    <div class="user-card" style="margin-bottom:.5rem"><div class="user-card-header"><div class="user-card-avatar"><div style="width:40px;height:40px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;color:var(--primary-foreground);font-weight:700">#</div></div><div class="user-card-info"><h4></h4><p>x üye</p></div></div><button class="user-card-action">Gruba Git</button></div>
                 </div>
             </div>
 
@@ -132,7 +143,7 @@
             <!-- Chat Header -->
             <div class="chat-header" id="chat-header">
                 <div class="chat-user-info">
-                    <img id="chat-user-avatar" src="https://pbs.twimg.com/profile_images/1545518896874242055/s8icSRfU_400x400.jpg" alt="User Avatar">
+                    <div id="chat-user-avatar-ico"><img id="chat-user-avatar" src="https://pbs.twimg.com/profile_images/1545518896874242055/s8icSRfU_400x400.jpg" alt="User Avatar"></div>
                     <div>
                         <h4 id="chat-user-name"></h4>
                         <span id="chat-user-status">Çevrimiçi</span>

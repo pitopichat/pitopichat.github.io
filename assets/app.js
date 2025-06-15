@@ -178,6 +178,9 @@ const elements = {
   get onlineCount() {
     return document.getElementById("online-count")
   },
+  get chatUserAvatarIcon() {
+    return document.getElementById("chat-user-avatar-ico")
+  },
   get chatUserAvatar() {
     return document.getElementById("chat-user-avatar")
   },
@@ -224,8 +227,8 @@ function showGroupInfo() {
 
   // Gizlilik durumunu göster
   const privacyStatus = group.isPrivate
-    ? '<span style="background: var(--muted); color: var(--muted-foreground); padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.8rem; margin-left: 0.5rem;">Gizli Grup</span>'
-    : '<span style="background: var(--secondary); color: var(--secondary-foreground); padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.8rem; margin-left: 0.5rem;">Açık Grup</span>'
+    ? '<span style="background: var(--muted); color: var(--muted-foreground); padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.8rem; margin-left: 0.5rem;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 15.8C4 14.1198 4 13.2798 4.32698 12.638C4.6146 12.0735 5.07354 11.6146 5.63803 11.327C6.27976 11 7.11984 11 8.8 11H15.2C16.8802 11 17.7202 11 18.362 11.327C18.9265 11.6146 19.3854 12.0735 19.673 12.638C20 13.2798 20 14.1198 20 15.8V16.2C20 17.8802 20 18.7202 19.673 19.362C19.3854 19.9265 18.9265 20.3854 18.362 20.673C17.7202 21 16.8802 21 15.2 21H8.8C7.11984 21 6.27976 21 5.63803 20.673C5.07354 20.3854 4.6146 19.9265 4.32698 19.362C4 18.7202 4 17.8802 4 16.2V15.8Z" stroke="currentColor" stroke-width="1.5"/><path d="M7 11V8C7 5.23858 9.23858 3 12 3C14.7614 3 17 5.23858 17 8V11" stroke="currentColor" stroke-width="1.5"/></svg></span>'
+    : '<span style="background: var(--secondary); color: var(--secondary-foreground); padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.8rem; margin-left: 0.5rem;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 15.8C4 14.1198 4 13.2798 4.32698 12.638C4.6146 12.0735 5.07354 11.6146 5.63803 11.327C6.27976 11 7.11984 11 8.8 11H15.2C16.8802 11 17.7202 11 18.362 11.327C18.9265 11.6146 19.3854 12.0735 19.673 12.638C20 13.2798 20 14.1198 20 15.8V16.2C20 17.8802 20 18.7202 19.673 19.362C19.3854 19.9265 18.9265 20.3854 18.362 20.673C17.7202 21 16.8802 21 15.2 21H8.8C7.11984 21 6.27976 21 5.63803 20.673C5.07354 20.3854 4.6146 19.9265 4.32698 19.362C4 18.7202 4 17.8802 4 16.2V15.8Z" stroke="currentColor" stroke-width="1.5"/><path d="M7 11V8C7 5.23858 9.23858 3 12 3C14.0503 3 15.8124 4.2341 16.584 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>'
 
   document.getElementById("group-info-title").innerHTML += privacyStatus
   document.getElementById("group-member-count").textContent = group.members.length
@@ -291,8 +294,8 @@ function createGroup() {
   hideCreateGroupModal()
 }
 
-function joinGroup() {
-  const groupId = document.getElementById("join-group-id-input").value.trim()
+function joinGroup(id) {
+  const groupId = id || document.getElementById("join-group-id-input").value.trim()
 
   if (!groupId) {
     showToast("Grup ID gereklidir")
@@ -372,6 +375,7 @@ function showGroupChatPage(group) {
     
   // Update chat header
   elements.chatUserName.textContent = group.name
+  elements.chatUserAvatarIcon.innerHTML = "<div style='width: 32px; height: 32px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: var(--primary-foreground); font-weight: bold; font-size: 0.75rem;'>" + group.name.charAt(0).toUpperCase() + "</div>"
 
   // Clear chat and load group messages
   elements.chat.innerHTML = ""
@@ -392,7 +396,6 @@ function leaveChat() {
   }
 
   showHomePage()
-  showToast("Sohbetten ayrıldınız")
 }
 
 // Sidebar Management
@@ -515,13 +518,11 @@ function renderGroupsGrid() {
     return
   }
 
-  // Show first 6 groups on homepage
-  const groupsToShow = state.groups.slice(0, 6)
-
-  groupsToShow.forEach((group) => {
-    const groupCard = document.createElement("div")
-    groupCard.className = "user-card"
-    groupCard.innerHTML = `
+  state.myGroups.forEach((group) => {
+    const groupDiv = document.createElement("div")
+    groupDiv.className = "user-card"
+    groupDiv.style.marginBottom = "0.5rem"
+    groupDiv.innerHTML = `
       <div class="user-card-header">
         <div class="user-card-avatar">
           <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: var(--primary-foreground); font-weight: bold;">
@@ -534,20 +535,54 @@ function renderGroupsGrid() {
         </div>
       </div>
       <button class="user-card-action">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg>
         Gruba Git
       </button>
     `
 
-    groupCard.querySelector(".user-card-action").addEventListener("click", () => {
+    groupDiv.onclick = () => {
       showGroupChatPage(group)
       if (window.innerWidth <= 800) {
         closeSidebar("left")
       }
-    })
+    }
 
-    container.appendChild(groupCard)
+    container.appendChild(groupDiv)
   })
+
+  // Show first 6 groups on homepage
+  const groupsToShow = state.groups.filter(
+    (group) => !state.myGroups.some((my) => my.id === group.id)
+  );
+
+  groupsToShow.forEach((group) => {
+    const groupCard = document.createElement("div")
+    groupCard.className = "user-card"
+    groupCard.innerHTML = `
+      <div class="user-card-header">
+        <div class="user-card-avatar">
+          <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: var(--primary-foreground); font-weight: bold;">
+            ${group.name.charAt(0).toUpperCase()}
+          </div>
+        </div>
+        <div class="user-card-info">
+          <h4>${group.name} ${group.isPrivate ?'<span style="font-size: 0.7rem; background: var(--muted); color: var(--muted-foreground); padding: 0.1rem 0.3rem; border-radius: 0.25rem; margin-left: 0.3rem;">Gizli</span>' : ''}</h4>
+          <p>${group.members.length} üye</p>
+        </div>
+      </div>
+      <button class="user-card-action">
+        Gruba Katıl
+      </button>
+    `
+
+    groupCard.querySelector(".user-card-action").addEventListener("click", () => {
+      joinGroup(group.id);
+      if (window.innerWidth <= 800) {
+        closeSidebar("left")
+      }
+    });
+
+    container.appendChild(groupCard);
+  });
 }
 
 function renderMyGroups() {
