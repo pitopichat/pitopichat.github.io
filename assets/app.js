@@ -82,6 +82,9 @@ const elements = {
   get status() {
     return document.getElementById("status")
   },
+  get statusText() {
+    return document.getElementById("chat-user-status")
+  },
   get sendBtn() {
     return document.getElementById("send-btn")
   },
@@ -371,7 +374,7 @@ function showGroupChatPage(group) {
   elements.inputContainer.style.display = "block"
   elements.groupInfoBtn.style.display = "flex"
 
-  document.getElementById("chat-user-status").innerText = state.selectedGroup.members.length + " üye";
+  elements.statusText.innerText = state.selectedGroup.members.length + " üye";
     
   // Update chat header
   elements.chatUserName.textContent = group.name
@@ -893,6 +896,30 @@ function handleProfilePictureUpload() {
 
 // UI event listeners
 function initUIEventListeners() {
+
+  let typingTimeout;
+
+elements.msgInput.addEventListener("input", () => {
+  if (state.connectionStatus && state.dataChannel?.readyState === "open") {
+    try {
+      state.dataChannel.send(JSON.stringify({ type: "typing" }));
+    } catch (e) {
+      console.error("Typing mesajı gönderilemedi:", e);
+    }
+  }
+
+  clearTimeout(typingTimeout);
+  typingTimeout = setTimeout(() => {
+    if (state.connectionStatus && state.dataChannel?.readyState === "open") {
+      try {
+        state.dataChannel.send(JSON.stringify({ type: "stop-typing" }));
+      } catch (e) {
+        console.error("Stop-typing mesajı gönderilemedi:", e);
+      }
+    }
+  }, 2000); // 2 saniye yazmazsa "Yazıyor..." yazısı kaldırılır
+});
+
   // Message input
   elements.msgInput.addEventListener("keypress", (event) => {
     if (event.key === "Enter") {
@@ -1166,7 +1193,7 @@ function handlePeerDisconnect() {
   console.log("Peer disconnected, cleaning up...")
 
   updateStatus(CONNECTION_STATES.DISCONNECTED)
-  elements.status.style.backgroundColor = "#ef4444"
+  elements.status.style.backgroundColor = "var(--destructive)"
 
   showSystemMessage("Karşı taraf bağlantıyı kapattı veya bağlantı kaybedildi.")
 
@@ -1371,7 +1398,7 @@ socket.on("call-answered", async ({ answer }) => {
 
 socket.on("call-rejected", ({ reason }) => {
   updateStatus("Bağlantı reddedildi: " + reason)
-  elements.status.style.backgroundColor = "#ef4444"
+  elements.status.style.backgroundColor = "var(--destructive)"
   showToast("Bağlanmaya çalıştığınız kişi meşgul veya bağlantıyı reddetti")
   localStorage.removeItem("p2p_remote_id")
 
@@ -1584,6 +1611,12 @@ function handleData(data) {
         state.receivedBuffers = []
       } else if (msg.type === "system") {
         showSystemMessage(msg.message)
+      } else if (msg.type === "typing") {
+        elements.statusText.textContent = "Yazıyor...";
+        elements.statusText.style.color = "orange"
+      } else if (msg.type === "stop-typing") {
+        elements.statusText.textContent = "Çevrimiçi";
+        elements.statusText.style.color = "var(--online)"
       }
     } catch {
       if (data === "EOF" && state.incomingFileInfo) {
@@ -1688,7 +1721,7 @@ function updateStatus(text) {
       }),
     )
   } else if (text === CONNECTION_STATES.DISCONNECTED) {
-    elements.status.style.backgroundColor = "#ef4444"
+    elements.status.style.backgroundColor = "var(--destructive)"
   }
 }
 
