@@ -19,8 +19,7 @@ const CONNECTION_STATES = {
 const SOCKET_SERVER = "https://pitopi.onrender.com";
 const DEFAULT_PROFILE_PIC = "assets/boringavatar.svg";
 const STORY_DURATION = {
-    IMAGE: 5000,
-    VIDEO_MAX: 15000,
+    IMAGE: 4000,
 };
 
 /*
@@ -47,7 +46,7 @@ const state = {
     dataChannel: null,
     receivedBuffers: [],
     incomingFileInfo: null,
-    connectionStatus: localStorage.getItem(STORAGE_KEYS.CONNECTION_STATUS) === "true",
+    connectionStatus: localStorage.getItem(STORAGE_KEYS.CONNECTION_STATUS),
     remoteId: sessionStorage.getItem(STORAGE_KEYS.REMOTE_ID) || null,
     myId: null,
     myPersistentId: null,
@@ -261,7 +260,7 @@ function renderStoriesList() {
 
         storyCard.innerHTML = `
             <div class="w-12 h-12 rounded-full bg-purple-500 flex items-center justify-center text-white font-medium shrink-0">
-                <img src="${latestStory.content || DEFAULT_PROFILE_PIC}" alt="profile picture" class="w-full h-full rounded-full object-cover">
+                <img src="${user.profilePic || DEFAULT_PROFILE_PIC}" alt="profile picture" class="w-full h-full rounded-full object-cover">
             </div>
             <div class="ml-3 flex-1 min-w-0">
                 <div class="flex justify-between">
@@ -367,6 +366,11 @@ function renderSettingsList() {
     container.innerHTML = "";
 
     const settings = [
+        {
+            icon: `<i class="fas fa-copy"></i>`,
+            label: "Copy your ID",
+            onClick: () => {navigator.clipboard.writeText(state.myId);showToast("You copied your ID")}
+        },
         {
             icon: `<i class="fas fa-camera"></i>`,
             label: "Upload Profile Photo",
@@ -699,6 +703,7 @@ function setupChannel() {
     if (elements.sendMessageBtn) elements.sendMessageBtn.disabled = false;
 
     state.dataChannel.onopen = () => {
+        openChat();
         updateStatus(CONNECTION_STATES.CONNECTED);
         localStorage.setItem(STORAGE_KEYS.CONNECTION_STATUS, "true");
     };
@@ -804,6 +809,7 @@ function openGroupChat(group) {
     state.currentView = "group";
 
     // Update UI
+    if (elements.sendMessageBtn) elements.sendMessageBtn.disabled = false;
     if (elements.noChatPlaceholder) {
         elements.noChatPlaceholder.classList.add("hidden");
     }
@@ -874,91 +880,78 @@ function closeGroupChat() {
 /*
  * 13. Story Screen
  */
+let isStoryPlaying = false;
+
 function openStory(user) {
+    if (isStoryPlaying) return; // Başka hikaye oynuyorsa iptal et
+
     closeChat();
+
     const storyData = state.currentStories[user.persistentUserId];
-    if (!storyData || !storyData.stories?.length) {
+    const stories = storyData?.stories?.filter(s => s.type === "image") || [];
+
+    if (!stories.length) {
         showToast("Bu kullanıcıya ait hikaye yok.");
         return;
     }
 
-    if (elements.noChatPlaceholder) {
-        elements.noChatPlaceholder.classList.add("hidden");
-    }
+    isStoryPlaying = true; // Hikaye oynatılıyor
 
     const panel = document.getElementById("story-panel");
     const img = document.getElementById("story-image");
     const progressContainer = document.getElementById("story-progress-container");
     const usernameLabel = document.getElementById("story-username");
     const avatar = document.getElementById("story-avatar");
-    const chatPanel = document.getElementById("chat-panel");
 
+    elements.noChatPlaceholder?.classList.add("hidden");
     panel.classList.remove("hidden");
-
-    if (chatPanel.classList.contains("hidden")) {
-        chatPanel.classList.remove("hidden");
-    }
-    if (chatPanel.classList.contains("mobile-chat-closed")) {
-        chatPanel.classList.remove("mobile-chat-closed");
-    }
-    if (!chatPanel.classList.contains("mobile-chat-open")) {
-        chatPanel.classList.add("mobile-chat-open");
-    }
-
-    let index = 0;
-    const stories = storyData.stories.filter(s => s.type === "image");
-    if (!stories.length) return;
-
-    const total = stories.length;
-    let timeout;
-
-    function renderProgressBars() {
-        progressContainer.innerHTML = "";
-        for (let i = 0; i < total; i++) {
-            const bar = document.createElement("div");
-            bar.className = "h-full bg-gray-700 relative flex-1 mx-0.5 overflow-hidden rounded";
-            const fill = document.createElement("div");
-            fill.className = "absolute top-0 left-0 h-full bg-accent w-0 transition-all";
-            fill.id = `progress-fill-${i}`;
-            bar.appendChild(fill);
-            progressContainer.appendChild(bar);
-        }
-    }
-
-    function updateProgress(i, duration) {
-        const bar = document.getElementById(`progress-fill-${i}`);
-        if (!bar) return;
-        bar.style.transition = "none";
-        bar.style.width = "0%";
-        requestAnimationFrame(() => {
-            bar.style.transition = `width ${duration}ms linear`;
-            bar.style.width = "100%";
-        });
-    }
-
-    function showStory(i) {
-        if (i < 0 || i >= total) {
-            closeStory();
-            return;
-        }
-
-        index = i;
-        clearTimeout(timeout);
-        const story = stories[i];
-
-        img.src = story.content;
-        img.classList.remove("hidden");
-
-        updateProgress(i, STORY_DURATION.IMAGE);
-        timeout = setTimeout(() => showStory(i + 1), STORY_DURATION.IMAGE);
-    }
+    document.getElementById("chat-panel")?.classList.remove("hidden");
+    document.getElementById("chat-panel")?.classList.remove("mobile-chat-closed");
+    document.getElementById("chat-panel")?.classList.add("mobile-chat-open");
 
     usernameLabel.textContent = user.username;
     avatar.src = user.profilePic || DEFAULT_PROFILE_PIC;
-    panel.classList.remove("hidden");
 
-    renderProgressBars();
-    showStory(index);
+    progressContainer.innerHTML = "";
+    stories.forEach((_, i) => {
+        const bar = document.createElement("div");
+        bar.className = "h-full bg-gray-700 relative flex-1 mx-0.5 overflow-hidden rounded";
+        bar.innerHTML = `<div id="progress-fill-${i}" class="absolute top-0 left-0 h-full bg-accent w-0 transition-all"></div>`;
+        progressContainer.appendChild(bar);
+    });
+
+    let index = 0;
+
+    function showNextStory() {
+        if (index >= stories.length) {
+            closeStory();
+            isStoryPlaying = false;
+            return;
+        }
+
+        const story = stories[index];
+        img.src = story.content;
+        img.draggable = false;
+        img.addEventListener("touchstart", e => e.preventDefault());
+        img.addEventListener("mousedown", e => e.preventDefault());
+        img.classList.remove("hidden");
+
+        const fill = document.getElementById(`progress-fill-${index}`);
+        fill.style.width = "0%";
+        fill.style.transition = "none";
+
+        requestAnimationFrame(() => {
+            fill.style.transition = `width ${STORY_DURATION.IMAGE}ms linear`;
+            fill.style.width = "100%";
+        });
+
+        setTimeout(() => {
+            index++;
+            showNextStory();
+        }, STORY_DURATION.IMAGE);
+    }
+
+    showNextStory();
 }
 
 function closeStory() {
@@ -966,7 +959,8 @@ function closeStory() {
     const panel = document.getElementById("story-panel");
     const img = document.getElementById("story-image");
     const progressContainer = document.getElementById("story-progress-container");
-    
+    isStoryPlaying = false;
+
     img.src = "";
     panel.classList.add("hidden");
     progressContainer.innerHTML = "";
@@ -1052,6 +1046,56 @@ function closeChat() {
         elements.messagesContainer.innerHTML = "";
     }
 }
+
+function toggleFloatingMenu() {
+    const menu = document.getElementById("floating-menu");
+    const isVisible = !menu.classList.contains("hidden");
+
+    if (isVisible) {
+        menu.classList.add("hidden");
+        return;
+    }
+
+    const { currentView, selectedUser, selectedGroup } = state;
+
+    const copyBtn = document.getElementById("copy-id-btn");
+    const chatBtn = document.getElementById("leave-chat-btn");
+    const leaveBtn = document.getElementById("leave-group-btn");
+
+    if (currentView === "group" && selectedGroup) {
+        copyBtn.onclick = () => {
+            navigator.clipboard.writeText(selectedGroup.id);
+            showToast("Group ID kopyalandı");
+            menu.classList.add("hidden");
+        };
+
+        chatBtn.classList.add("hidden");
+        
+        leaveBtn.classList.remove("hidden");
+        leaveBtn.onclick = () => {
+            leaveGroup();
+            menu.classList.add("hidden");
+        };
+
+    } else if (currentView === "chat" && selectedUser) {
+        copyBtn.onclick = () => {
+            navigator.clipboard.writeText(selectedUser.id);
+            showToast("Kullanıcı ID kopyalandı");
+            menu.classList.add("hidden");
+        };
+
+        chatBtn.classList.remove("hidden");
+        chatBtn.onclick = () => {
+            handlePeerDisconnect();
+            menu.classList.add("hidden");
+        }
+
+        leaveBtn.classList.add("hidden");
+    }
+
+    menu.classList.remove("hidden");
+}
+
 
 /*
  * 15. Utilities
@@ -1326,6 +1370,13 @@ document.addEventListener("DOMContentLoaded", () => {
     sessionStorage.removeItem(STORAGE_KEYS.CONNECTION_STATUS);
     if (elements.noChatPlaceholder) elements.noChatPlaceholder.classList.remove("hidden");
     if (elements.chatContent) elements.chatContent.classList.add("hidden");
+});
+
+document.addEventListener("click", (e) => {
+    const menu = document.getElementById("floating-menu");
+    if (!menu.contains(e.target) && !e.target.closest("[onclick='toggleFloatingMenu()']")) {
+        menu.classList.add("hidden");
+    }
 });
 
 window.sendMessage = sendMessage;
