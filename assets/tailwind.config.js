@@ -32,11 +32,24 @@ tailwind.config = {
 // Check for dark mode
 if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
     document.documentElement.classList.add("dark");
+    const manifest = document.createElement('link');
+    manifest.rel = 'manifest';
+    manifest.href = `manifest-dark.json`;
+    document.head.appendChild(manifest);
 }
+// Watch for dark mode
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (event) => {
     if (event.matches) {
         document.documentElement.classList.add("dark");
+        const manifest = document.createElement('link');
+        manifest.rel = 'manifest';
+        manifest.href = `manifest-dark.json`;
+        document.head.appendChild(manifest);
     } else {
         document.documentElement.classList.remove("dark");
+        const manifest = document.createElement('link');
+        manifest.rel = 'manifest';
+        manifest.href = `manifest.json`;
+        document.head.appendChild(manifest);
     }
 });
