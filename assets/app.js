@@ -212,7 +212,7 @@ function renderChatsList() {
         const lastSeen = isOnline ? "online" : "last seen recently";
 
         chatElement.innerHTML = `
-            <div class="w-12 h-12 rounded-full bg-purple-500 flex items-center justify-center text-white font-medium shrink-0">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-medium shrink-0">
                 <img src="${user.profilePic || DEFAULT_PROFILE_PIC}" alt="${user.username}" class="w-full h-full rounded-full object-cover">
             </div>
             <div class="ml-3 flex-1 min-w-0">
@@ -259,7 +259,7 @@ function renderStoriesList() {
         storyCard.className = "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
 
         storyCard.innerHTML = `
-            <div class="w-12 h-12 rounded-full bg-purple-500 flex items-center justify-center text-white font-medium shrink-0">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-medium shrink-0">
                 <img src="${user.profilePic || DEFAULT_PROFILE_PIC}" alt="profile picture" class="w-full h-full rounded-full object-cover">
             </div>
             <div class="ml-3 flex-1 min-w-0">
