@@ -1,0 +1,21 @@
+{
+  "short_name": "Pitopi",
+  "name": "Pitopi",
+  "icons": [
+    {
+      "src": "assets/pitopi.png",
+      "type": "image/png",
+      "sizes": "500x500"
+    }
+  ],
+  "start_url": "/pitopi/index.html",
+  "scope": "/pitopi/",
+  "id": "/pitopi/",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "display": "standalone",
+  "orientation": "portrait",
+  "description": "Real-Time and Secure Peer to Peer Chat",
+  "lang": "en",
+  "categories": ["chatting", "social", "chat"]
+}

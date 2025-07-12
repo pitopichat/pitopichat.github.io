@@ -1,3 +1,6 @@
+/*
+ * 1. Configuration Constants
+ */
 const STORAGE_KEYS = {
     USERNAME: "p2p_username",
     PERSISTENT_USER_ID: "p2p_persistent_user_id",
@@ -20,29 +23,25 @@ const STORY_DURATION = {
     VIDEO_MAX: 15000,
 };
 
-// Check if user is logged in
+/*
+ * 2. Session Setup and Socket Init
+ */
 const savedUsername = localStorage.getItem(STORAGE_KEYS.USERNAME);
-if (!savedUsername) {
-    window.location.href = "login.html";
-}
+if (!savedUsername) window.location.href = "login.html";
 
-// Initialize with saved username and persistent user ID
 const username = savedUsername;
 const savedBase64Pp = localStorage.getItem(STORAGE_KEYS.PROFILE_PIC);
 const profilePic = savedBase64Pp || DEFAULT_PROFILE_PIC;
 const persistentUserId = localStorage.getItem(STORAGE_KEYS.PERSISTENT_USER_ID);
 
-// Initialize socket connection
 const socket = io(SOCKET_SERVER, {
     transports: ["websocket"],
-    auth: {
-        username,
-        profilePic,
-        persistentUserId,
-    },
+    auth: { username, profilePic, persistentUserId },
 });
 
-// Global state
+/*
+ * 3. Global State
+ */
 const state = {
     peer: null,
     dataChannel: null,
@@ -71,7 +70,9 @@ const state = {
     messages: {},
 };
 
-// DOM elements cache
+/*
+ * 4. DOM Elements
+ */
 const elements = {
     get TabChat() { return document.getElementById("TabChat"); },
     get TabGroup() { return document.getElementById("TabGroup"); },
@@ -90,178 +91,19 @@ const elements = {
     get backToChatBtn() { return document.getElementById("back-to-chats"); },
     get searchInput() { return document.getElementById("searchId"); },
     get toggleThemeBtn() { return document.getElementById("toggle-theme"); },
-    get storyInput() {return document.getElementById("storyInput");},
-    get uploadAvatarInput() {return document.getElementById("uploadAvatarInput");},
+    get storyInput() { return document.getElementById("storyInput"); },
+    get uploadAvatarInput() { return document.getElementById("uploadAvatarInput"); },
 };
 
-// Initialize Application
+/*
+ * 5. Initialization
+ */
+
 function initApp() {
     setupEventListeners();
     initUIEventListeners();
 }
 
-// Örnek içerik üreticileri (işlevsel fark burada)
-function renderChats() {
-    renderChatsList();
-    TabChat.classList.remove("hidden");
-    TabGroup.classList.add("hidden");
-    TabStory.classList.add("hidden");
-    TabSetting.classList.add("hidden");
-}
-
-function renderGroups() {
-    renderGroupsList();
-    TabChat.classList.add("hidden");
-    TabGroup.classList.remove("hidden");
-    TabStory.classList.add("hidden");
-    TabSetting.classList.add("hidden");
-}
-
-function renderStorys() {
-    renderStoriesList();
-    TabChat.classList.add("hidden");
-    TabGroup.classList.add("hidden");
-    TabStory.classList.remove("hidden");
-    TabSetting.classList.add("hidden");
-}
-
-function renderSettings() {
-    renderSettingsList();
-    TabChat.classList.add("hidden");
-    TabGroup.classList.add("hidden");
-    TabStory.classList.add("hidden");
-    TabSetting.classList.remove("hidden");
-}
-
-const sidebarButtons = [
-    { id: "btnChats", action: renderChats },
-    { id: "btnGroups", action: renderGroups },
-    { id: "btnStorys", action: renderStorys },
-    { id: "btnSettings", action: renderSettings }
-];
-
-sidebarButtons.forEach(({ id, action }) => {
-    const btn = document.getElementById(id);
-    btn.addEventListener("click", () => {
-        // Aktiflik stili güncelle
-        sidebarButtons.forEach(({ id: otherId }) => {
-            const otherBtn = document.getElementById(otherId);
-            otherBtn.classList.remove("text-accent");
-            otherBtn.classList.add("text-gray-500");
-        });
-        btn.classList.add("text-accent");
-        btn.classList.remove("text-gray-500");
-
-        // İçeriği göster
-        action();
-    });
-});
-
-const mobileButtons = [
-    { id: "mobBtnChats", action: renderChats },
-    { id: "mobBtnGroups", action: renderGroups },
-    { id: "mobBtnStorys", action: renderStorys },
-    { id: "mobBtnSettings", action: renderSettings }
-];
-
-mobileButtons.forEach(({ id, action }) => {
-    const btn = document.getElementById(id);
-    btn.addEventListener("click", () => {
-        // Aktiflik stili güncelle
-        mobileButtons.forEach(({ id: otherId }) => {
-            const otherBtn = document.getElementById(otherId);
-            otherBtn.classList.remove("text-accent");
-            otherBtn.classList.add("text-gray-500");
-        });
-        btn.classList.add("text-accent");
-        btn.classList.remove("text-gray-500");
-
-        // İçeriği göster
-        action();
-    });
-});
-
-mobileButtons.forEach(({ id, action }) => {
-    const btn = document.getElementById(id);
-    btn.addEventListener("click", () => {
-        // Aktiflik stili güncelle
-        mobileButtons.forEach(({ id: otherId }) => {
-            const otherBtn = document.getElementById(otherId);
-            otherBtn.classList.remove("text-accent");
-            otherBtn.classList.add("text-gray-500");
-        });
-        btn.classList.add("text-accent");
-        btn.classList.remove("text-gray-500");
-
-        action();
-    });
-});
-
-
-function initProfilePictureUpload() {
-    if (elements.uploadAvatarInput) {
-        elements.uploadAvatarInput.addEventListener("change", handleProfilePictureUpload);
-    }
-}
-
-function handleProfilePictureUpload() {
-    const file = elements.uploadAvatarInput.files[0];
-    if (!file?.type.startsWith("image/")) {
-        showToast("Lütfen geçerli bir resim dosyası seçin.");
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-        const base64Image = reader.result;
-        localStorage.setItem(STORAGE_KEYS.PROFILE_PIC, base64Image);
-        document.querySelector("#btnSettings img").src = base64Image;
-        document.querySelector("#mobBtnSettings img").src = base64Image;
-        showToast("Profil resmi güncellendi");
-        socket.emit("update-profile-pic", base64Image);
-    };
-    reader.readAsDataURL(file);
-}
-
-// Story functionality
-function initStoryFunctionality() {
-    if (elements.storyInput) {
-        elements.storyInput.addEventListener("change", handleStoryUpload);
-    }
-}
-
-function handleStoryUpload() {
-    const file = elements.storyInput.files[0];
-    if (!file) return;
-
-    if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
-        showToast("Lütfen bir resim veya video dosyası seçin.");
-        return;
-    }
-
-    // Check file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-        showToast("Dosya boyutu 10MB'dan küçük olmalıdır.");
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-        const content = reader.result;
-        const type = file.type.startsWith("image/") ? "image" : "video";
-
-        socket.emit("upload-story", {
-            content,
-            type,
-            caption: "",
-        });
-
-        showToast("Hikaye başarıyla yüklendi!");
-    };
-    reader.readAsDataURL(file);
-}
-
-// Event Listeners
 function setupEventListeners() {
     // Toggle theme
     if (elements.toggleThemeBtn) {
@@ -301,7 +143,6 @@ function setupEventListeners() {
     }
 }
 
-// UI event listeners
 function initUIEventListeners() {
     let typingTimeout;
 
@@ -329,73 +170,27 @@ function initUIEventListeners() {
     }
 }
 
-function renderSettingsList() {
-    const container = elements.chatsList;
-    if (!container) return;
-
-    container.innerHTML = "";
-
-    const settings = [
-        {
-            icon: `<i class="fas fa-camera"></i>`,
-            label: "Profil Fotoğrafı Yükle",
-            onClick: () => document.getElementById("uploadAvatarInput")?.click()
-        },
-        {
-            icon: `<i class="fas fa-user-secret"></i>`,
-            label: "Aramada Gizle",
-            onClick: () => toggleSearchVisibility()
-        },
-        {
-            icon: `<i class="fas fa-sign-out-alt"></i>`,
-            label: "Çıkış Yap",
-            onClick: () => logoutUser()
-        }
-    ];
-
-    settings.forEach(setting => {
-        const item = document.createElement("div");
-        item.className = "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
-
-        item.innerHTML = `
-            <div class="w-12 h-12 rounded-full bg-accent text-white flex items-center justify-center text-xl shrink-0">
-                ${setting.icon}
-            </div>
-            <div class="ml-3 flex-1 min-w-0">
-                <div class="font-medium truncate text-black dark:text-white">${setting.label}</div>
-            </div>
-        `;
-
-        item.onclick = setting.onClick;
-        container.appendChild(item);
-    });
-}
-
-function logoutUser() {
-    localStorage.removeItem(STORAGE_KEYS.USERNAME);
-    localStorage.removeItem(STORAGE_KEYS.PERSISTENT_USER_ID);
-    window.location.href = "login.html";
-}
-
-function toggleSearchVisibility() {
-    state.hiddenFromSearch = !state.hiddenFromSearch;
-    localStorage.setItem(STORAGE_KEYS.HIDDEN, state.hiddenFromSearch);
-
-    if (state.hiddenFromSearch) { 
-        showToast("You are now hidden from search");
-    } else {
-        showToast("You are now visible in search");
+function initStoryFunctionality() {
+    if (elements.storyInput) {
+        elements.storyInput.addEventListener("change", handleStoryUpload);
     }
-
-    socket.emit("update-visibility", { hidden: state.hiddenFromSearch });
 }
 
-// Render Functions
+
+function initProfilePictureUpload() {
+    if (elements.uploadAvatarInput) {
+        elements.uploadAvatarInput.addEventListener("change", handleProfilePictureUpload);
+    }
+}
+
+/*
+ * 6. UI Render Functions
+ */
 const renderNotEmpty = [
-    "İlk olmaya ne dersin? 👀",
-    "Belki kahve koymaya gittiler ☕",
-    "Dalgın dalgın ekrana bakıyolar 😶",
-    "İnternette kaybolmuş olabilirler 🌐",
+    "How about being the first? 👀", 
+    "Maybe they went to make coffee ☕", 
+    "They're staring blankly at the screen 😶", 
+    "They might be lost online 🌐",
 ];
 
 function renderChatsList() {
@@ -450,7 +245,6 @@ function renderStoriesList() {
     if (!container) return;
 
     container.innerHTML = "";
-
     let hasStories = false;
 
     Object.entries(state.currentStories).forEach(([persistentUserId, storyData]) => {
@@ -481,6 +275,8 @@ function renderStoriesList() {
             </div>
         `;
 
+        storyCard.addEventListener("click", () => openStory(user)); // 🔥 EKLENDİ
+
         container.appendChild(storyCard);
     });
 
@@ -488,6 +284,7 @@ function renderStoriesList() {
         container.innerHTML = `<div class="text-center text-gray-500 dark:text-gray-400 py-10">${renderNotEmpty[Math.floor(Math.random() * renderNotEmpty.length)]}</div>`;
     }
 }
+
 
 function renderGroupsList() {
     elements.chatsList.innerHTML = "";
@@ -563,226 +360,197 @@ function renderGroupsList() {
     }
 }
 
-function joinGroup(id) {
-    const groupId = id || document.getElementById("join-group-id-input").value.trim();
+function renderSettingsList() {
+    const container = elements.chatsList;
+    if (!container) return;
 
-    if (!groupId) {
-        showToast("Grup ID gereklidir");
-        return;
-    }
+    container.innerHTML = "";
 
-    socket.emit("join-group", { groupId });
-}
-
-function leaveGroup() {
-    if (!state.selectedGroup) return;
-
-    const confirmLeave = confirm(`"${state.selectedGroup.name}" grubundan ayrılmak istediğinizden emin misiniz?`);
-    if (!confirmLeave) return;
-
-    socket.emit("leave-group", { groupId: state.selectedGroup.id });
-}
-
-function openChat(user) {
-    state.activeChat = user;
-    state.selectedUser = user;
-    state.currentView = "chat";
-
-    // Update UI
-    if (elements.noChatPlaceholder) {
-        elements.noChatPlaceholder.classList.add("hidden");
-    }
-    if (elements.chatContent) {
-        elements.chatContent.classList.remove("hidden");
-        elements.chatContent.classList.add("flex");
-    }
-
-    // Handle mobile view
-    if (elements.chatPanel) {
-        elements.chatPanel.classList.remove("hidden");
-        elements.chatPanel.classList.add("mobile-chat-open");
-        elements.chatPanel.classList.remove("mobile-chat-closed");
-    }
-
-    // Update chat header
-    if (elements.chatName) elements.chatName.textContent = user.username;
-    if (elements.chatAvatar) {
-        elements.chatAvatar.innerHTML = `<img src="${user.profilePic || DEFAULT_PROFILE_PIC}" alt="${user.username}" class="w-full h-full rounded-full object-cover">`;
-    }
-    if (elements.chatStatus) elements.chatStatus.textContent = "online";
-
-    // Clear messages
-    if (elements.messagesContainer) {
-        elements.messagesContainer.innerHTML = "";
-    }
-
-    // Start P2P connection
-    startCall(user.id);
-
-    // Focus the message input
-    if (elements.messageInput) {
-        elements.messageInput.focus();
-    }
-}
-
-function openGroupChat(group) {
-    state.activeChat = group;
-    state.selectedGroup = group;
-    state.currentView = "group";
-
-    // Update UI
-    if (elements.noChatPlaceholder) {
-        elements.noChatPlaceholder.classList.add("hidden");
-    }
-    if (elements.chatContent) {
-        elements.chatContent.classList.remove("hidden");
-        elements.chatContent.classList.add("flex");
-    }
-
-    // Handle mobile view
-    if (elements.chatPanel) {
-        elements.chatPanel.classList.remove("hidden");
-        elements.chatPanel.classList.add("mobile-chat-open");
-        elements.chatPanel.classList.remove("mobile-chat-closed");
-    }
-
-    // Update chat header
-    if (elements.chatName) elements.chatName.textContent = group.name;
-    if (elements.chatAvatar) {
-        elements.chatAvatar.innerHTML = `<div class="w-full h-full rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">${group.name.charAt(0).toUpperCase()}</div>`;
-    }
-    if (elements.chatStatus) elements.chatStatus.textContent = `${group.members.length} members`;
-
-    // Clear messages
-    if (elements.messagesContainer) {
-        elements.messagesContainer.innerHTML = "";
-    }
-
-    // Join group room
-    socket.emit("join-group-room", { groupId: group.id });
-
-    // Focus the message input
-    if (elements.messageInput) {
-        elements.messageInput.focus();
-    }
-}
-
-// WebRTC functions
-function createPeer() {
-    const config = {
-        iceServers: [
-            { urls: "stun:stun.l.google.com:19302" },
-            { urls: "stun:stun1.l.google.com:19302" }
-        ],
-    };
-
-    const peer = new RTCPeerConnection(config);
-
-    peer.onicecandidate = (e) => {
-        if (e.candidate && state.remoteId) {
-            socket.emit("send-ice-candidate", {
-                targetId: state.remoteId,
-                candidate: e.candidate,
-            });
+    const settings = [
+        {
+            icon: `<i class="fas fa-camera"></i>`,
+            label: "Upload Profile Photo",
+            onClick: () => document.getElementById("uploadAvatarInput")?.click()
+        },
+        {
+            icon: `<i class="fas fa-user-secret"></i>`,
+            label: "You are now visible/hidden from search",
+            onClick: () => toggleSearchVisibility()
+        },
+        {
+            icon: `<i class="fas fa-sign-out-alt"></i>`,
+            label: "Log Out",
+            onClick: () => logoutUser()
         }
-    };
+    ];
 
-    peer.ondatachannel = (e) => {
-        state.dataChannel = e.channel;
-        setupChannel();
-    };
+    settings.forEach(setting => {
+        const item = document.createElement("div");
+        item.className = "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
 
-    peer.onconnectionstatechange = () => {
-        console.log("Connection state:", peer.connectionState);
-        if (["disconnected", "failed", "closed"].includes(peer.connectionState)) {
-            handlePeerDisconnect();
-        }
-    };
+        item.innerHTML = `
+            <div class="w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center text-lg shrink-0">
+                ${setting.icon}
+            </div>
+            <div class="ml-3 flex-1 min-w-0">
+                <div class="font-medium truncate text-black dark:text-white">${setting.label}</div>
+            </div>
+        `;
 
-    state.activePeerConnection = peer;
-    return peer;
-}
-
-function setupChannel() {
-    if (elements.sendMessageBtn) elements.sendMessageBtn.disabled = false;
-
-    state.dataChannel.onopen = () => {
-        updateStatus(CONNECTION_STATES.CONNECTED);
-        localStorage.setItem(STORAGE_KEYS.CONNECTION_STATUS, "true");
-    };
-
-    state.dataChannel.onclose = () => handlePeerDisconnect();
-    state.dataChannel.onerror = (error) => {
-        console.error("Data channel error:", error);
-        handlePeerDisconnect();
-    };
-    state.dataChannel.onmessage = (e) => handleData(e.data);
-}
-
-function handlePeerDisconnect() {
-    if (!state.connectionStatus) return;
-
-    console.log("Peer disconnected, cleaning up...");
-    updateStatus(CONNECTION_STATES.DISCONNECTED);
-    showSystemMessage("Karşı taraf bağlantıyı kapattı veya bağlantı kaybedildi.");
-
-    // Clean up resources
-    state.dataChannel?.close();
-    state.activePeerConnection?.close();
-
-    // Reset state
-    Object.assign(state, {
-        dataChannel: null,
-        activePeerConnection: null,
-        connectionStatus: false,
-        remoteId: null,
-        receivedBuffers: [],
-        incomingFileInfo: null,
+        item.onclick = setting.onClick;
+        container.appendChild(item);
     });
-
-    // Clear connection state in localStorage
-    sessionStorage.removeItem(STORAGE_KEYS.REMOTE_ID);
-    sessionStorage.removeItem(STORAGE_KEYS.CONNECTION_STATUS);
-
-    if (elements.sendMessageBtn) elements.sendMessageBtn.disabled = true;
 }
 
-async function startCall(id) {
-    if (!id) {
-        alert("Lütfen bir hedef ID girin");
+
+/*
+ * 7. Navigation and Button Logic
+ */
+let activeTabId = "btnChats";
+
+const sidebarButtons = [
+    { id: "btnChats", action: renderChats },
+    { id: "btnGroups", action: renderGroups },
+    { id: "btnStorys", action: renderStorys },
+    { id: "btnSettings", action: renderSettings }
+];
+
+sidebarButtons.forEach(({ id, action }) => {
+    const btn = document.getElementById(id);
+    btn.addEventListener("click", () => {
+        activeTabId = id;
+
+        sidebarButtons.forEach(({ id: otherId }) => {
+            const otherBtn = document.getElementById(otherId);
+            otherBtn.classList.remove("text-accent");
+            otherBtn.classList.add("text-gray-500");
+        });
+        btn.classList.add("text-accent");
+        btn.classList.remove("text-gray-500");
+
+        action();
+    });
+});
+
+const mobileButtons = [
+    { id: "mobBtnChats", action: renderChats },
+    { id: "mobBtnGroups", action: renderGroups },
+    { id: "mobBtnStorys", action: renderStorys },
+    { id: "mobBtnSettings", action: renderSettings }
+];
+
+mobileButtons.forEach(({ id, action }) => {
+    const btn = document.getElementById(id);
+    btn.addEventListener("click", () => {
+        activeTabId = id;
+
+        mobileButtons.forEach(({ id: otherId }) => {
+            const otherBtn = document.getElementById(otherId);
+            otherBtn.classList.remove("text-accent");
+            otherBtn.classList.add("text-gray-500");
+        });
+        btn.classList.add("text-accent");
+        btn.classList.remove("text-gray-500");
+
+        action();
+    });
+});
+
+
+/*
+ * 8. Media Upload Handlers
+ */
+function handleProfilePictureUpload() {
+    const file = elements.uploadAvatarInput.files[0];
+    if (!file?.type.startsWith("image/")) {
+        showToast("Lütfen geçerli bir resim dosyası seçin.");
         return;
     }
 
-    if (state.connectionStatus) {
-        const confirmReconnect = confirm("Zaten bir sohbete bağlısınız. Önceki sohbeti kapatıp yeni bir bağlantı kurmak istiyor musunuz?");
-        if (!confirmReconnect) return;
-        handlePeerDisconnect();
-    }
-
-    try {
-        state.remoteId = id;
-        sessionStorage.setItem(STORAGE_KEYS.REMOTE_ID, id);
-
-        state.peer = createPeer();
-        state.dataChannel = state.peer.createDataChannel("chat");
-        setupChannel();
-
-        updateStatus(CONNECTION_STATES.CONNECTING);
-
-        const offer = await state.peer.createOffer();
-        await state.peer.setLocalDescription(offer);
-
-        socket.emit("call-user", {
-            targetId: state.remoteId,
-            offer,
-        });
-    } catch (error) {
-        console.error("Error creating offer:", error);
-        handlePeerDisconnect();
-    }
+    const reader = new FileReader();
+    reader.onload = () => {
+        const base64Image = reader.result;
+        localStorage.setItem(STORAGE_KEYS.PROFILE_PIC, base64Image);
+        document.querySelector("#btnSettings img").src = base64Image;
+        document.querySelector("#mobBtnSettings img").src = base64Image;
+        showToast("Profil resmi güncellendi");
+        socket.emit("update-profile-pic", base64Image);
+    };
+    reader.readAsDataURL(file);
 }
 
-// Message functions
+function handleStoryUpload() {
+    const file = elements.storyInput.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
+        showToast("Lütfen bir resim veya video dosyası seçin.");
+        return;
+    }
+
+    // Check file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+        showToast("Dosya boyutu 10MB'dan küçük olmalıdır.");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+        const content = reader.result;
+        const type = file.type.startsWith("image/") ? "image" : "video";
+
+        socket.emit("upload-story", {
+            content,
+            type,
+            caption: "",
+        });
+
+        showToast("Hikaye başarıyla yüklendi!");
+    };
+    reader.readAsDataURL(file);
+}
+
+
+/*
+ * 9. View Logic
+ */
+function renderChats() {
+    renderChatsList();
+    TabChat.classList.remove("hidden");
+    TabGroup.classList.add("hidden");
+    TabStory.classList.add("hidden");
+    TabSetting.classList.add("hidden");
+}
+
+function renderGroups() {
+    renderGroupsList();
+    TabChat.classList.add("hidden");
+    TabGroup.classList.remove("hidden");
+    TabStory.classList.add("hidden");
+    TabSetting.classList.add("hidden");
+}
+
+function renderStorys() {
+    renderStoriesList();
+    TabChat.classList.add("hidden");
+    TabGroup.classList.add("hidden");
+    TabStory.classList.remove("hidden");
+    TabSetting.classList.add("hidden");
+}
+
+function renderSettings() {
+    renderSettingsList();
+    TabChat.classList.add("hidden");
+    TabGroup.classList.add("hidden");
+    TabStory.classList.add("hidden");
+    TabSetting.classList.remove("hidden");
+}
+
+
+/*
+ * 10. Messaging
+ */
+
 function sendMessage() {
     const text = elements.messageInput?.value.trim();
     if (!text) return;
@@ -887,7 +655,416 @@ function showSystemMessage(message) {
     elements.messagesContainer.scrollTop = elements.messagesContainer.scrollHeight;
 }
 
-// Utility functions
+
+
+/*
+ * 11. WebRTC Functions
+ */
+function createPeer() {
+    const config = {
+        iceServers: [
+            { urls: "stun:stun.l.google.com:19302" },
+            { urls: "stun:stun1.l.google.com:19302" }
+        ],
+    };
+
+    const peer = new RTCPeerConnection(config);
+
+    peer.onicecandidate = (e) => {
+        if (e.candidate && state.remoteId) {
+            socket.emit("send-ice-candidate", {
+                targetId: state.remoteId,
+                candidate: e.candidate,
+            });
+        }
+    };
+
+    peer.ondatachannel = (e) => {
+        state.dataChannel = e.channel;
+        setupChannel();
+    };
+
+    peer.onconnectionstatechange = () => {
+        console.log("Connection state:", peer.connectionState);
+        if (["disconnected", "failed", "closed"].includes(peer.connectionState)) {
+            handlePeerDisconnect();
+        }
+    };
+
+    state.activePeerConnection = peer;
+    return peer;
+}
+
+function setupChannel() {
+    if (elements.sendMessageBtn) elements.sendMessageBtn.disabled = false;
+
+    state.dataChannel.onopen = () => {
+        updateStatus(CONNECTION_STATES.CONNECTED);
+        localStorage.setItem(STORAGE_KEYS.CONNECTION_STATUS, "true");
+    };
+
+    state.dataChannel.onclose = () => handlePeerDisconnect();
+    state.dataChannel.onerror = (error) => {
+        console.error("Data channel error:", error);
+        handlePeerDisconnect();
+    };
+    state.dataChannel.onmessage = (e) => handleData(e.data);
+}
+
+async function startCall(id) {
+    if (!id) {
+        alert("Lütfen bir hedef ID girin");
+        return;
+    }
+
+    if (state.connectionStatus) {
+        const confirmReconnect = confirm("Zaten bir sohbete bağlısınız. Önceki sohbeti kapatıp yeni bir bağlantı kurmak istiyor musunuz?");
+        if (!confirmReconnect) return;
+        handlePeerDisconnect();
+    }
+
+    try {
+        state.remoteId = id;
+        sessionStorage.setItem(STORAGE_KEYS.REMOTE_ID, id);
+
+        state.peer = createPeer();
+        state.dataChannel = state.peer.createDataChannel("chat");
+        setupChannel();
+
+        updateStatus(CONNECTION_STATES.CONNECTING);
+
+        const offer = await state.peer.createOffer();
+        await state.peer.setLocalDescription(offer);
+
+        socket.emit("call-user", {
+            targetId: state.remoteId,
+            offer,
+        });
+    } catch (error) {
+        console.error("Error creating offer:", error);
+        handlePeerDisconnect();
+    }
+}
+
+function handlePeerDisconnect() {
+    if (!state.connectionStatus) return;
+
+    console.log("Peer disconnected, cleaning up...");
+    updateStatus(CONNECTION_STATES.DISCONNECTED);
+    showSystemMessage("Karşı taraf bağlantıyı kapattı veya bağlantı kaybedildi.");
+
+    // Clean up resources
+    closeChat();
+    state.dataChannel?.close();
+    state.activePeerConnection?.close();
+
+    // Reset state
+    Object.assign(state, {
+        dataChannel: null,
+        activePeerConnection: null,
+        connectionStatus: false,
+        remoteId: null,
+        receivedBuffers: [],
+        incomingFileInfo: null,
+    });
+
+    // Clear connection state in localStorage
+    sessionStorage.removeItem(STORAGE_KEYS.REMOTE_ID);
+    sessionStorage.removeItem(STORAGE_KEYS.CONNECTION_STATUS);
+
+    if (elements.sendMessageBtn) elements.sendMessageBtn.disabled = true;
+}
+
+/*
+ * 12. Group Chat Screen
+ */
+function joinGroup(id) {
+    const groupId = id || document.getElementById("join-group-id-input").value.trim();
+
+    if (!groupId) {
+        showToast("Grup ID gereklidir");
+        return;
+    }
+
+    socket.emit("join-group", { groupId });
+}
+
+function leaveGroup() {
+    if (!state.selectedGroup) return;
+
+    const confirmLeave = confirm(`"${state.selectedGroup.name}" grubundan ayrılmak istediğinizden emin misiniz?`);
+    if (!confirmLeave) return;
+
+    socket.emit("leave-group", { groupId: state.selectedGroup.id });
+}
+
+function openGroupChat(group) {
+    state.activeChat = group;
+    state.selectedGroup = group;
+    state.currentView = "group";
+
+    // Update UI
+    if (elements.noChatPlaceholder) {
+        elements.noChatPlaceholder.classList.add("hidden");
+    }
+    if (elements.chatContent) {
+        elements.chatContent.classList.remove("hidden");
+        elements.chatContent.classList.add("flex");
+    }
+
+    // Handle mobile view
+    if (elements.chatPanel) {
+        elements.chatPanel.classList.remove("hidden");
+        elements.chatPanel.classList.add("mobile-chat-open");
+        elements.chatPanel.classList.remove("mobile-chat-closed");
+    }
+
+    // Update chat header
+    if (elements.chatName) elements.chatName.textContent = group.name;
+    if (elements.chatAvatar) {
+        elements.chatAvatar.innerHTML = `<div class="w-full h-full rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">${group.name.charAt(0).toUpperCase()}</div>`;
+    }
+    if (elements.chatStatus) elements.chatStatus.textContent = `${group.members.length} members`;
+
+    // Clear messages
+    if (elements.messagesContainer) {
+        elements.messagesContainer.innerHTML = "";
+    }
+
+    // Join group room
+    socket.emit("join-group-room", { groupId: group.id });
+
+    // Focus the message input
+    if (elements.messageInput) {
+        elements.messageInput.focus();
+    }
+}
+
+function closeGroupChat() {
+    // Leave group room
+    if (state.selectedGroup?.id) {
+        socket.emit("leave-group-room", { groupId: state.selectedGroup.id });
+    }
+
+    // Clear state
+    state.activeChat = null;
+    state.selectedGroup = null;
+    state.currentView = null;
+
+    // Hide chat UI
+    if (elements.chatContent) {
+        elements.chatContent.classList.add("hidden");
+        elements.chatContent.classList.remove("flex");
+    }
+    if (elements.chatPanel) {
+        elements.chatPanel.classList.remove("mobile-chat-open");
+        elements.chatPanel.classList.add("mobile-chat-closed");
+    }
+    if (elements.noChatPlaceholder) {
+        elements.noChatPlaceholder.classList.remove("hidden");
+    }
+
+    // Clear messages
+    if (elements.messagesContainer) {
+        elements.messagesContainer.innerHTML = "";
+    }
+}
+
+
+/*
+ * 13. Story Screen
+ */
+function openStory(user) {
+    closeChat();
+    const storyData = state.currentStories[user.persistentUserId];
+    if (!storyData || !storyData.stories?.length) {
+        showToast("Bu kullanıcıya ait hikaye yok.");
+        return;
+    }
+
+    if (elements.noChatPlaceholder) {
+        elements.noChatPlaceholder.classList.add("hidden");
+    }
+
+    const panel = document.getElementById("story-panel");
+    const img = document.getElementById("story-image");
+    const progressContainer = document.getElementById("story-progress-container");
+    const usernameLabel = document.getElementById("story-username");
+    const avatar = document.getElementById("story-avatar");
+    const chatPanel = document.getElementById("chat-panel");
+
+    panel.classList.remove("hidden");
+
+    if (chatPanel.classList.contains("hidden")) {
+        chatPanel.classList.remove("hidden");
+    }
+    if (chatPanel.classList.contains("mobile-chat-closed")) {
+        chatPanel.classList.remove("mobile-chat-closed");
+    }
+    if (!chatPanel.classList.contains("mobile-chat-open")) {
+        chatPanel.classList.add("mobile-chat-open");
+    }
+
+    let index = 0;
+    const stories = storyData.stories.filter(s => s.type === "image");
+    if (!stories.length) return;
+
+    const total = stories.length;
+    let timeout;
+
+    function renderProgressBars() {
+        progressContainer.innerHTML = "";
+        for (let i = 0; i < total; i++) {
+            const bar = document.createElement("div");
+            bar.className = "h-full bg-gray-700 relative flex-1 mx-0.5 overflow-hidden rounded";
+            const fill = document.createElement("div");
+            fill.className = "absolute top-0 left-0 h-full bg-accent w-0 transition-all";
+            fill.id = `progress-fill-${i}`;
+            bar.appendChild(fill);
+            progressContainer.appendChild(bar);
+        }
+    }
+
+    function updateProgress(i, duration) {
+        const bar = document.getElementById(`progress-fill-${i}`);
+        if (!bar) return;
+        bar.style.transition = "none";
+        bar.style.width = "0%";
+        requestAnimationFrame(() => {
+            bar.style.transition = `width ${duration}ms linear`;
+            bar.style.width = "100%";
+        });
+    }
+
+    function showStory(i) {
+        if (i < 0 || i >= total) {
+            closeStory();
+            return;
+        }
+
+        index = i;
+        clearTimeout(timeout);
+        const story = stories[i];
+
+        img.src = story.content;
+        img.classList.remove("hidden");
+
+        updateProgress(i, STORY_DURATION.IMAGE);
+        timeout = setTimeout(() => showStory(i + 1), STORY_DURATION.IMAGE);
+    }
+
+    usernameLabel.textContent = user.username;
+    avatar.src = user.profilePic || DEFAULT_PROFILE_PIC;
+    panel.classList.remove("hidden");
+
+    renderProgressBars();
+    showStory(index);
+}
+
+function closeStory() {
+    const chatPanel = document.getElementById("chat-panel");
+    const panel = document.getElementById("story-panel");
+    const img = document.getElementById("story-image");
+    const progressContainer = document.getElementById("story-progress-container");
+    
+    img.src = "";
+    panel.classList.add("hidden");
+    progressContainer.innerHTML = "";
+    chatPanel.classList.add("hidden");
+    chatPanel.classList.add("mobile-chat-closed");
+    chatPanel.classList.remove("mobile-chat-open");
+
+    if (elements.noChatPlaceholder) {
+        elements.noChatPlaceholder.classList.remove("hidden");
+    }
+}
+
+
+/*
+ * 14. User Chat Screen
+ */
+function openChat(user) {
+    closeStory(); 
+    state.activeChat = user;
+    state.selectedUser = user;
+    state.currentView = "chat";
+
+    // Update UI
+    if (elements.noChatPlaceholder) {
+        elements.noChatPlaceholder.classList.add("hidden");
+    }
+    if (elements.chatContent) {
+        elements.chatContent.classList.remove("hidden");
+        elements.chatContent.classList.add("flex");
+    }
+
+    // Handle mobile view
+    if (elements.chatPanel) {
+        elements.chatPanel.classList.remove("hidden");
+        elements.chatPanel.classList.add("mobile-chat-open");
+        elements.chatPanel.classList.remove("mobile-chat-closed");
+    }
+
+    // Update chat header
+    if (elements.chatName) elements.chatName.textContent = user.username;
+    if (elements.chatAvatar) {
+        elements.chatAvatar.innerHTML = `<img src="${user.profilePic || DEFAULT_PROFILE_PIC}" alt="${user.username}" class="w-full h-full rounded-full object-cover">`;
+    }
+    if (elements.chatStatus) elements.chatStatus.textContent = "online";
+
+    // Clear messages
+    if (elements.messagesContainer) {
+        elements.messagesContainer.innerHTML = "";
+    }
+
+    // Start P2P connection
+    startCall(user.id);
+
+    // Focus the message input
+    if (elements.messageInput) {
+        elements.messageInput.focus();
+    }
+}
+
+function closeChat() {
+    // Clear state
+    state.activeChat = null;
+    state.selectedUser = null;
+    state.currentView = null;
+
+    // Hide chat UI
+    if (elements.chatContent) {
+        elements.chatContent.classList.add("hidden");
+        elements.chatContent.classList.remove("flex");
+    }
+
+    if (elements.chatPanel) {
+        elements.chatPanel.classList.remove("mobile-chat-open");
+        elements.chatPanel.classList.add("mobile-chat-closed");
+    }
+
+    if (elements.noChatPlaceholder) {
+        elements.noChatPlaceholder.classList.remove("hidden");
+    }
+
+    // Clear messages
+    if (elements.messagesContainer) {
+        elements.messagesContainer.innerHTML = "";
+    }
+}
+
+/*
+ * 15. Utilities
+ */
+function updateStatus(text) {
+    console.log("Status:", text);
+    if (text === CONNECTION_STATES.CONNECTED) {
+        state.connectionStatus = true;
+    } else if (text === CONNECTION_STATES.DISCONNECTED) {
+        state.connectionStatus = false;
+    }
+}
+
 function formatTime(date) {
     return date.toLocaleString("en-US", { 
         hour: "numeric", 
@@ -909,15 +1086,6 @@ function timeAgo(timestamp) {
   if (minutes < 60) return `${minutes} dakika önce paylaşıldı`;
   if (hours   < 24) return `${hours} saat önce paylaşıldı`;
   return `${days} gün önce paylaşıldı`;
-}
-
-function updateStatus(text) {
-    console.log("Status:", text);
-    if (text === CONNECTION_STATES.CONNECTED) {
-        state.connectionStatus = true;
-    } else if (text === CONNECTION_STATES.DISCONNECTED) {
-        state.connectionStatus = false;
-    }
 }
 
 function playNotificationSound() {
@@ -971,7 +1139,15 @@ function showToast(message) {
     }, 3000);
 }
 
-// Socket event handlers
+/*
+ * 16. Socket Events
+ */
+socket.on("connect", () => {
+    initApp();
+    document.querySelector("#btnSettings img").src = profilePic;
+    document.querySelector("#mobBtnSettings img").src = profilePic;
+});
+
 socket.on("your-id", ({ socketId, persistentUserId }) => {
     state.myId = socketId;
     state.myPersistentId = persistentUserId;
@@ -979,9 +1155,15 @@ socket.on("your-id", ({ socketId, persistentUserId }) => {
     console.log(`Connected with socket ID: ${socketId}, persistent ID: ${persistentUserId}`);
 });
 
+socket.on("nickname-restricted", (message) => {
+    alert(message || "Kullanıcı adınız kısıtlanmış. Bağlantı sonlandırıldı.");
+    localStorage.removeItem(STORAGE_KEYS.USERNAME);
+    localStorage.removeItem(STORAGE_KEYS.PERSISTENT_USER_ID);
+});
+
 socket.on("online-users", (users) => {
     state.allUsers = users;
-    renderChatsList();
+    if (activeTabId == "btnChats" || activeTabId == "mobBtnChats") renderChatsList();
 });
 
 socket.on("user-disconnected", (userId) => {
@@ -992,17 +1174,35 @@ socket.on("user-disconnected", (userId) => {
 
 socket.on("stories-updated", (stories) => {
     state.currentStories = stories;
-    renderStoriesList(stories);
+    if (activeTabId == "btnStorys" || activeTabId == "mobBtnStorys") renderStoriesList(stories);
 });
 
-// Group socket events
 socket.on("groups-updated", (groups) => {
     state.groups = groups;
 });
 
 socket.on("my-groups-updated", (myGroups) => {
     state.myGroups = myGroups;
-    renderChatsList();
+    if (activeTabId == "btnGroups" || activeTabId == "mobBtnGroups") renderGroupsList();
+});
+
+socket.on("group-created", (data) => {
+    showToast(`"${data.group.name}" grubu başarıyla oluşturuldu!`);
+    state.myGroups.push(data.group);
+    renderGroupsList();
+});
+
+socket.on("group-joined", (data) => {
+    showToast(`"${data.group.name}" grubuna katıldınız!`);
+    state.myGroups.push(data.group);
+    renderGroupsList();
+});
+
+socket.on("group-left", (data) => {
+    showToast(`"${data.groupName}" grubundan ayrıldınız`);
+    state.myGroups = state.myGroups.filter((g) => g.id !== data.groupId);
+    renderGroupsList();
+    closeGroupChat();
 });
 
 socket.on("group-message", (data) => {
@@ -1010,6 +1210,11 @@ socket.on("group-message", (data) => {
         logMessage(`<div class="text-xs text-accent dark:text-accent text-left mt-1">${data.sender.username}</div>${data.message}`, "them");
         playNotificationSound();
     }
+});
+
+socket.on("group-error", (error) => {
+    showToast(error.message || "Grup işlemi başarısız");
+    closeGroupChat();
 });
 
 socket.on("incoming-call", async ({ from, offer }) => {
@@ -1076,6 +1281,7 @@ socket.on("call-rejected", ({ reason }) => {
     state.activePeerConnection = null;
     state.connectionStatus = false;
     state.remoteId = null;
+    closeChat();
 });
 
 socket.on("ice-candidate", async ({ candidate }) => {
@@ -1088,26 +1294,38 @@ socket.on("ice-candidate", async ({ candidate }) => {
     }
 });
 
-// Initialize everything when DOM is ready
+/*
+ * 17. Settings Functions
+ */
+function logoutUser() {
+    localStorage.removeItem(STORAGE_KEYS.USERNAME);
+    localStorage.removeItem(STORAGE_KEYS.PERSISTENT_USER_ID);
+    window.location.href = "login.html";
+}
+
+function toggleSearchVisibility() {
+    state.hiddenFromSearch = !state.hiddenFromSearch;
+    localStorage.setItem(STORAGE_KEYS.HIDDEN, state.hiddenFromSearch);
+
+    if (state.hiddenFromSearch) { 
+        showToast("You are now hidden from search");
+    } else {
+        showToast("You are now visible in search");
+    }
+
+    socket.emit("update-visibility", { hidden: state.hiddenFromSearch });
+}
+
+/*
+ * 18. App Ready
+ */
 document.addEventListener("DOMContentLoaded", () => {
-    initApp();
     initStoryFunctionality();
     initProfilePictureUpload();
-
     sessionStorage.removeItem(STORAGE_KEYS.REMOTE_ID);
     sessionStorage.removeItem(STORAGE_KEYS.CONNECTION_STATUS);
-    
-    // Show initial state
-    if (elements.noChatPlaceholder) {
-        elements.noChatPlaceholder.classList.remove("hidden");
-    }
-    if (elements.chatContent) {
-        elements.chatContent.classList.add("hidden");
-    }
-
-    document.querySelector("#btnSettings img").src = profilePic;
-    document.querySelector("#mobBtnSettings img").src = profilePic;
+    if (elements.noChatPlaceholder) elements.noChatPlaceholder.classList.remove("hidden");
+    if (elements.chatContent) elements.chatContent.classList.add("hidden");
 });
 
-// Global functions for HTML onclick handlers
 window.sendMessage = sendMessage;
