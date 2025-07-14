@@ -634,7 +634,7 @@ function logMessage(text, from) {
 
     msgDiv.innerHTML = `
         <div class="text-sm whitespace-pre-wrap">${processedText}</div>
-        <div class="text-xs text-gray-500 dark:text-gray-400 text-right mt-1">
+        <div class="text-xs text-gray-500 dark:text-gray-400 text-${from === "me" ? "right" : "left"} mt-1">
             ${formatTime(new Date())}
         </div>
     `;
@@ -703,7 +703,6 @@ function setupChannel() {
     if (elements.sendMessageBtn) elements.sendMessageBtn.disabled = false;
 
     state.dataChannel.onopen = () => {
-        openChat();
         updateStatus(CONNECTION_STATES.CONNECTED);
         localStorage.setItem(STORAGE_KEYS.CONNECTION_STATUS, "true");
     };
@@ -783,6 +782,49 @@ function handlePeerDisconnect() {
 /*
  * 12. Group Chat Screen
  */
+function showGroupCreationForm() {
+    const container = document.getElementById('chats-list');
+
+    container.innerHTML = `
+        <div class="dark:text-light text-dark p-4 space-y-4 text-sm">
+        <label class=block>
+            <span>Grup Adı:</span>
+            <input class="dark:text-light text-dark bg-gray-100 dark:bg-gray-800 py-2 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent my-4 pl-4 placeholder-gray-500 pr-4 rounded-lg text-base w-full"id=group-name-input placeholder="Örn. Geliştiriciler"></label>
+            <label class="flex cursor-pointer items-center space-x-3">
+            <input class="accent-accent border border-dark dark:accent-accentHover dark:border-light peer rounded size-4"id=group-private-checkbox type=checkbox>
+            <span class="dark:text-light text-dark text-base select-none">Özel Grup</span>
+        </label>
+        <div class="flex justify-end space-x-2">
+            <button class="dark:text-light text-dark bg-secondaryLight dark:bg-secondaryDark py-2 dark:hover:bg-gray-700 hover:bg-gray-300 px-4 rounded"onclick=cancelGroupCreation()>İptal</button>
+            <button class="py-2 px-4 rounded bg-accent hover:bg-accentHover text-light"onclick=createGroup()>Oluştur</button>
+        </div>
+    </div>
+    `;
+}
+
+function cancelGroupCreation() {
+    const container = document.getElementById('chats-list');
+    container.innerHTML = `<div class="p-4 text-center text-gray-500">Grup listesi yükleniyor...</div>`;
+    renderGroupsList();
+}
+
+function createGroup() {
+    const name = document.getElementById("group-name-input").value.trim();
+    const isPrivate = document.getElementById("group-private-checkbox").checked;
+
+    if (!name) {
+        showToast("Grup adı gereklidir");
+        return;
+    }
+
+    socket.emit("create-group", {
+        name,
+        isPrivate,
+    });
+
+    hideCreateGroupModal();
+}
+
 function joinGroup(id) {
     const groupId = id || document.getElementById("join-group-id-input").value.trim();
 
@@ -1077,7 +1119,7 @@ function toggleFloatingMenu() {
             menu.classList.add("hidden");
         };
 
-    } else if (currentView === "chat" && selectedUser) {
+    } else if (currentView === "chat") {
         copyBtn.onclick = () => {
             navigator.clipboard.writeText(selectedUser.id);
             showToast("Kullanıcı ID kopyalandı");
@@ -1223,6 +1265,7 @@ socket.on("stories-updated", (stories) => {
 
 socket.on("groups-updated", (groups) => {
     state.groups = groups;
+    if (activeTabId == "btnGroups" || activeTabId == "mobBtnGroups") renderGroupsList();
 });
 
 socket.on("my-groups-updated", (myGroups) => {
@@ -1285,9 +1328,9 @@ socket.on("incoming-call", async ({ from, offer }) => {
     }
 
     try {
-        openChat(caller);
         state.peer = createPeer();
         updateStatus("Yanıtlanıyor...");
+        openChat(caller);
 
         await state.peer.setRemoteDescription(new RTCSessionDescription(offer));
         const answer = await state.peer.createAnswer();
