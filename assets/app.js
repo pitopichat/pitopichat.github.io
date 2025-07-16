@@ -46,7 +46,7 @@ const state = {
     dataChannel: null,
     receivedBuffers: [],
     incomingFileInfo: null,
-    connectionStatus: localStorage.getItem(STORAGE_KEYS.CONNECTION_STATUS),
+    connectionStatus: localStorage.getItem(STORAGE_KEYS.CONNECTION_STATUS) === "false",
     remoteId: sessionStorage.getItem(STORAGE_KEYS.REMOTE_ID) || null,
     myId: null,
     myPersistentId: null,
@@ -247,7 +247,6 @@ function renderStoriesList() {
     let hasStories = false;
 
     Object.entries(state.currentStories).forEach(([persistentUserId, storyData]) => {
-        if (persistentUserId === state.myPersistentId) return;
         if (!storyData?.user || !storyData?.stories?.length) return;
 
         hasStories = true;
@@ -419,19 +418,24 @@ const sidebarButtons = [
     { id: "btnSettings", action: renderSettings }
 ];
 
+function activateButton(buttonList, activeId) {
+    buttonList.forEach(({ id }) => {
+        const btn = document.getElementById(id);
+        if (id === activeId) {
+            btn.classList.add("text-accent");
+            btn.classList.remove("text-gray-500");
+        } else {
+            btn.classList.remove("text-accent");
+            btn.classList.add("text-gray-500");
+        }
+    });
+}
+
 sidebarButtons.forEach(({ id, action }) => {
     const btn = document.getElementById(id);
     btn.addEventListener("click", () => {
         activeTabId = id;
-
-        sidebarButtons.forEach(({ id: otherId }) => {
-            const otherBtn = document.getElementById(otherId);
-            otherBtn.classList.remove("text-accent");
-            otherBtn.classList.add("text-gray-500");
-        });
-        btn.classList.add("text-accent");
-        btn.classList.remove("text-gray-500");
-
+        activateButton(sidebarButtons, id);
         action();
     });
 });
@@ -447,15 +451,7 @@ mobileButtons.forEach(({ id, action }) => {
     const btn = document.getElementById(id);
     btn.addEventListener("click", () => {
         activeTabId = id;
-
-        mobileButtons.forEach(({ id: otherId }) => {
-            const otherBtn = document.getElementById(otherId);
-            otherBtn.classList.remove("text-accent");
-            otherBtn.classList.add("text-gray-500");
-        });
-        btn.classList.add("text-accent");
-        btn.classList.remove("text-gray-500");
-
+        activateButton(mobileButtons, id);
         action();
     });
 });
@@ -520,34 +516,27 @@ function handleStoryUpload() {
  */
 function renderChats() {
     renderChatsList();
-    TabChat.classList.remove("hidden");
-    TabGroup.classList.add("hidden");
-    TabStory.classList.add("hidden");
-    TabSetting.classList.add("hidden");
+    showOnlyTab(TabChat);
 }
-
 function renderGroups() {
     renderGroupsList();
-    TabChat.classList.add("hidden");
-    TabGroup.classList.remove("hidden");
-    TabStory.classList.add("hidden");
-    TabSetting.classList.add("hidden");
+    showOnlyTab(TabGroup);
 }
-
 function renderStorys() {
     renderStoriesList();
-    TabChat.classList.add("hidden");
-    TabGroup.classList.add("hidden");
-    TabStory.classList.remove("hidden");
-    TabSetting.classList.add("hidden");
+    showOnlyTab(TabStory);
 }
-
 function renderSettings() {
     renderSettingsList();
+    showOnlyTab(TabSetting);
+}
+
+function showOnlyTab(tab) {
     TabChat.classList.add("hidden");
     TabGroup.classList.add("hidden");
     TabStory.classList.add("hidden");
-    TabSetting.classList.remove("hidden");
+    TabSetting.classList.add("hidden");
+    tab.classList.remove("hidden");
 }
 
 
@@ -717,7 +706,7 @@ function setupChannel() {
 
 async function startCall(id) {
     if (!id) {
-        alert("Lütfen bir hedef ID girin");
+        showToast("Lütfen bir hedef ID girin");
         return;
     }
 
@@ -774,7 +763,7 @@ function handlePeerDisconnect() {
 
     // Clear connection state in localStorage
     sessionStorage.removeItem(STORAGE_KEYS.REMOTE_ID);
-    sessionStorage.removeItem(STORAGE_KEYS.CONNECTION_STATUS);
+    localStorage.removeItem(STORAGE_KEYS.CONNECTION_STATUS);
 
     if (elements.sendMessageBtn) elements.sendMessageBtn.disabled = true;
 }
@@ -850,43 +839,17 @@ function openGroupChat(group) {
     state.selectedGroup = group;
     state.currentView = "group";
 
-    // Update UI
-    if (elements.sendMessageBtn) elements.sendMessageBtn.disabled = false;
-    if (elements.noChatPlaceholder) {
-        elements.noChatPlaceholder.classList.add("hidden");
-    }
-    if (elements.chatContent) {
-        elements.chatContent.classList.remove("hidden");
-        elements.chatContent.classList.add("flex");
-    }
+    prepareChatUI();
 
-    // Handle mobile view
-    if (elements.chatPanel) {
-        elements.chatPanel.classList.remove("hidden");
-        elements.chatPanel.classList.add("mobile-chat-open");
-        elements.chatPanel.classList.remove("mobile-chat-closed");
-    }
-
-    // Update chat header
     if (elements.chatName) elements.chatName.textContent = group.name;
     if (elements.chatAvatar) {
         elements.chatAvatar.innerHTML = `<div class="w-full h-full rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">${group.name.charAt(0).toUpperCase()}</div>`;
     }
     if (elements.chatStatus) elements.chatStatus.textContent = `${group.members.length} members`;
 
-    // Clear messages
-    if (elements.messagesContainer) {
-        elements.messagesContainer.innerHTML = "";
-    }
-
-    // Join group room
     socket.emit("join-group-room", { groupId: group.id });
-
-    // Focus the message input
-    if (elements.messageInput) {
-        elements.messageInput.focus();
-    }
 }
+
 
 function closeGroupChat() {
     // Leave group room
@@ -923,9 +886,11 @@ function closeGroupChat() {
  * 13. Story Screen
  */
 let isStoryPlaying = false;
+let storyTimeout = null;
 
 function openStory(user) {
-    if (isStoryPlaying) return; // Başka hikaye oynuyorsa iptal et
+    if (isStoryPlaying) return;
+    if (!user?.persistentUserId) return;
 
     closeChat();
 
@@ -965,6 +930,8 @@ function openStory(user) {
     let index = 0;
 
     function showNextStory() {
+        if (!isStoryPlaying) return;
+
         if (index >= stories.length) {
             closeStory();
             isStoryPlaying = false;
@@ -973,6 +940,19 @@ function openStory(user) {
 
         const story = stories[index];
         img.src = story.content;
+        if (user.persistentUserId === state.myPersistentId) {
+            const deleteBtn = document.getElementById("delete-story-btn");
+            if (deleteBtn) {
+                deleteBtn.classList.remove("hidden");
+                deleteBtn.onclick = () => {
+                    if (confirm("Bu hikayeyi silmek istediğine emin misin?")) {
+                        socket.emit("delete-story", { storyId: story.id });
+                        closeStory();
+                    }
+                };
+            }
+        }
+
         img.draggable = false;
         img.addEventListener("touchstart", e => e.preventDefault());
         img.addEventListener("mousedown", e => e.preventDefault());
@@ -987,22 +967,32 @@ function openStory(user) {
             fill.style.width = "100%";
         });
 
-        setTimeout(() => {
+        storyTimeout = setTimeout(() => {
             index++;
             showNextStory();
         }, STORY_DURATION.IMAGE);
+
     }
 
     showNextStory();
 }
 
-function closeStory() {
+function closeStory() { 
     const chatPanel = document.getElementById("chat-panel");
     const panel = document.getElementById("story-panel");
     const img = document.getElementById("story-image");
     const progressContainer = document.getElementById("story-progress-container");
+    const deleteBtn = document.getElementById("delete-story-btn");
+
+    // Hikaye oynatmayı durdur
+    if (storyTimeout) {
+        clearTimeout(storyTimeout);
+        storyTimeout = null;
+    }
     isStoryPlaying = false;
 
+    // UI temizle
+    if (deleteBtn) deleteBtn.classList.add("hidden");
     img.src = "";
     panel.classList.add("hidden");
     progressContainer.innerHTML = "";
@@ -1010,56 +1000,52 @@ function closeStory() {
     chatPanel.classList.add("mobile-chat-closed");
     chatPanel.classList.remove("mobile-chat-open");
 
-    if (elements.noChatPlaceholder) {
-        elements.noChatPlaceholder.classList.remove("hidden");
-    }
+    elements.noChatPlaceholder?.classList.remove("hidden");
 }
+
 
 
 /*
  * 14. User Chat Screen
  */
-function openChat(user) {
-    closeStory(); 
-    state.activeChat = user;
-    state.selectedUser = user;
-    state.currentView = "chat";
+function prepareChatUI() {
+    if (elements.sendMessageBtn) elements.sendMessageBtn.disabled = false;
+    elements.noChatPlaceholder?.classList.add("hidden");
 
-    // Update UI
-    if (elements.noChatPlaceholder) {
-        elements.noChatPlaceholder.classList.add("hidden");
-    }
     if (elements.chatContent) {
         elements.chatContent.classList.remove("hidden");
         elements.chatContent.classList.add("flex");
     }
 
-    // Handle mobile view
     if (elements.chatPanel) {
         elements.chatPanel.classList.remove("hidden");
         elements.chatPanel.classList.add("mobile-chat-open");
         elements.chatPanel.classList.remove("mobile-chat-closed");
     }
 
-    // Update chat header
+    if (elements.messagesContainer) {
+        elements.messagesContainer.innerHTML = "";
+    }
+
+    setTimeout(elements.messageInput?.focus(), 0)
+}
+
+function openChat(user) {
+    closeStory(); 
+    state.activeChat = user;
+    state.selectedUser = user;
+    state.currentView = "chat";
+
+    prepareChatUI();
+
+    // Başlık & avatar
     if (elements.chatName) elements.chatName.textContent = user.username;
     if (elements.chatAvatar) {
         elements.chatAvatar.innerHTML = `<img src="${user.profilePic || DEFAULT_PROFILE_PIC}" alt="${user.username}" class="w-full h-full rounded-full object-cover">`;
     }
     if (elements.chatStatus) elements.chatStatus.textContent = "online";
 
-    // Clear messages
-    if (elements.messagesContainer) {
-        elements.messagesContainer.innerHTML = "";
-    }
-
-    // Start P2P connection
     startCall(user.id);
-
-    // Focus the message input
-    if (elements.messageInput) {
-        elements.messageInput.focus();
-    }
 }
 
 function closeChat() {
@@ -1410,7 +1396,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initStoryFunctionality();
     initProfilePictureUpload();
     sessionStorage.removeItem(STORAGE_KEYS.REMOTE_ID);
-    sessionStorage.removeItem(STORAGE_KEYS.CONNECTION_STATUS);
+    localStorage.removeItem(STORAGE_KEYS.CONNECTION_STATUS);
     if (elements.noChatPlaceholder) elements.noChatPlaceholder.classList.remove("hidden");
     if (elements.chatContent) elements.chatContent.classList.add("hidden");
 });
