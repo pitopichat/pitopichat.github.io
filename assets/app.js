@@ -760,8 +760,8 @@ function logMessage(text, from) {
     const msgDiv = document.createElement("div");
     msgDiv.className = `max-w-[80%] px-3 py-2 rounded-lg ${
         from === "me" 
-            ? "bg-messageBg-outgoing-light dark:bg-messageBg-outgoing-dark rounded-br-none" 
-            : "bg-messageBg-incoming-light dark:bg-messageBg-incoming-dark rounded-bl-none"
+            ? "bg-messageBg-light dark:bg-messageBg-dark rounded-br-none" 
+            : "bg-messageBg-light dark:bg-messageBg-dark rounded-bl-none"
     }`;
 
     const urlRegex = /(https?:\/\/[^\s]+)/g;
