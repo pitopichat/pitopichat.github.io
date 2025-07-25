@@ -15,14 +15,8 @@ tailwind.config = {
                     dark: "#0F0F0F",
                 },
                 messageBg: {
-                    outgoing: {
-                        light: "#EEFFDE",
-                        dark: "#2B5278",
-                    },
-                    incoming: {
-                        light: "#FFFFFF",
-                        dark: "#181818",
-                    },
+                    light: "#FFFFFF",
+                    dark: "#212121",
                 },
             },
         },
