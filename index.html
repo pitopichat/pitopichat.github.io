@@ -50,7 +50,7 @@
                 <div class="search-wrapper items-center relative flex flex-1 w-full flex-nowrap flex-row">
                     <img class="md:hidden w-10 h-10 rounded-full text-white flex items-center justify-center" src="https://devnar.github.io/pitopi/assets/pitopi.png" alt="Pitopi">
                     <div class="relative w-full p-2">
-                        <input id="searchId" type="text" placeholder="Search users..." 
+                        <input id="searchId" type="text" placeholder="Search..." 
                             class="w-full pl-4 pr-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-base">
                         <div class="absolute right-4 top-4 text-gray-400">
                             <i class="fas fa-search"></i>
@@ -98,9 +98,7 @@
             
             <!-- Chats List -->
             <div id="chats-list" class="flex-1 overflow-y-auto">
-                <div class="p-4 text-center text-gray-500">
-                    Connecting to server...
-                </div>
+                <div class="text-center text-gray-500 py-10">Connecting to server...</div>
             </div>
             
             <!-- Mobile Bottom Menu -->
@@ -135,12 +133,14 @@
             
             <!-- Story content (initially hidden) -->
             <div id="story-panel" class="hidden flex-col h-full inset-0 flex flex-col items-center justify-center text-white">
-                <div class="absolute top-0 left-0 w-full px-4 py-3 flex items-center justify-between bg-opacity-50 z-40">
+                <div class="absolute backdrop-blur-[5px] top-0 left-0 w-full px-4 py-3 flex items-center justify-between bg-opacity-50 z-40">
                     <div class="flex items-center gap-2">
                         <img id="story-avatar" class="w-10 h-10 rounded-full object-cover" />
                         <span id="story-username" class="font-semibold text-lg"></span>
                     </div>
-                    <button id="delete-story-btn" class="hidden text-xl px-2 hover:text-red-400"><i class="fas fa-circle-xmark"></i></button>
+                    <button id="delete-story-btn" class="hidden text-xl px-2 hover:text-red-400">
+                        <i class="fas fa-trash-can"></i>
+                    </button>
                 </div>
                 <div id="story-progress-container" class="absolute top-16 left-0 w-full h-1 px-4 flex gap-1 z-40"></div>
                 <img id="story-image" class="max-w-full max-h-full object-contain z-30" />

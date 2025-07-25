@@ -43,6 +43,7 @@ const socket = io(SOCKET_SERVER, {
  */
 const state = {
     peer: null,
+    isConnected: null,
     dataChannel: null,
     receivedBuffers: [],
     incomingFileInfo: null,
@@ -137,7 +138,7 @@ function setupEventListeners() {
     if (elements.searchInput) {
         elements.searchInput.addEventListener("input", (e) => {
             const searchTerm = e.target.value.trim().toLowerCase();
-            filterUsers(searchTerm);
+            searchInCurrentTab(searchTerm);
         });
     }
 }
@@ -195,6 +196,11 @@ const renderNotEmpty = [
 function renderChatsList() {
     if (!elements.chatsList) return;
 
+    if (!state.isConnected) {
+        elements.chatsList.innerHTML = `<div class="text-center text-gray-500 py-10">Connecting to server...</div>`;
+        return;
+    }
+
     elements.chatsList.innerHTML = "";
 
     let hasChats = false;
@@ -239,9 +245,43 @@ function renderChatsList() {
     }
 }
 
+function renderChatSearchResults(users) {
+    elements.chatsList.innerHTML = "";
+
+    if (!users.length) {
+        elements.chatsList.innerHTML = `<div class="text-center text-gray-500 dark:text-gray-400 py-10">No matching users found.</div>`;
+        return;
+    }
+
+    users.forEach((user) => {
+        const chatElement = document.createElement("div");
+        chatElement.className = "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
+        chatElement.dataset.userId = user.id;
+
+        chatElement.innerHTML = `
+            <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-medium shrink-0">
+                <img src="${user.profilePic || DEFAULT_PROFILE_PIC}" alt="${user.username}" class="w-full h-full rounded-full object-cover">
+            </div>
+            <div class="ml-3 flex-1 min-w-0">
+                <div class="font-medium truncate text-black dark:text-white">${user.username}</div>
+                <div class="text-sm text-gray-500 truncate">online</div>
+            </div>
+        `;
+
+        chatElement.addEventListener("click", () => openChat(user));
+
+        elements.chatsList.appendChild(chatElement);
+    });
+}
+
 function renderStoriesList() {
     const container = elements.chatsList;
     if (!container) return;
+
+    if (!state.isConnected) {
+        elements.chatsList.innerHTML = `<div class="text-center text-gray-500 py-10">Connecting to server...</div>`;
+        return;
+    }
 
     container.innerHTML = "";
     let hasStories = false;
@@ -283,11 +323,47 @@ function renderStoriesList() {
     }
 }
 
+function renderStorySearchResults(stories) {
+    elements.chatsList.innerHTML = "";
+
+    if (!stories.length) {
+        elements.chatsList.innerHTML = `<div class="text-center text-gray-500 dark:text-gray-400 py-10">No matching stories found.</div>`;
+        return;
+    }
+
+    stories.forEach((storyData) => {
+        const user = storyData.user;
+        const latestStory = storyData.stories[storyData.stories.length - 1];
+
+        const storyElement = document.createElement("div");
+        storyElement.className = "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
+
+        storyElement.innerHTML = `
+            <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-medium shrink-0">
+                <img src="${user.profilePic || DEFAULT_PROFILE_PIC}" alt="${user.username}" class="w-full h-full rounded-full object-cover">
+            </div>
+            <div class="ml-3 flex-1 min-w-0">
+                <div class="font-medium truncate text-black dark:text-white">${user.username}</div>
+                <div class="text-sm text-gray-500 truncate">${timeAgo(latestStory.timestamp)}</div>
+            </div>
+        `;
+
+        storyElement.addEventListener("click", () => openStory(user));
+
+        elements.chatsList.appendChild(storyElement);
+    });
+}
+
 
 function renderGroupsList() {
     elements.chatsList.innerHTML = "";
 
     let hasGroups = false;
+
+    if (!state.isConnected) {
+        elements.chatsList.innerHTML = `<div class="text-center text-gray-500 py-10">Connecting to server...</div>`;
+        return;
+    }
 
     state.myGroups.forEach((group) => {
         hasGroups = true;
@@ -358,6 +434,48 @@ function renderGroupsList() {
     }
 }
 
+function renderGroupSearchResults(groups) {
+    elements.chatsList.innerHTML = "";
+
+    if (!groups.length) {
+        elements.chatsList.innerHTML = `<div class="text-center text-gray-500 dark:text-gray-400 py-10">No matching groups found.</div>`;
+        return;
+    }
+
+    groups.forEach((group) => {
+        const groupElement = document.createElement("div");
+        groupElement.className = "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
+        groupElement.dataset.groupId = group.id;
+
+        groupElement.innerHTML = `
+            <div class="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center text-white font-medium shrink-0">
+                ${group.name.charAt(0).toUpperCase()}
+            </div>
+            <div class="ml-3 flex-1 min-w-0">
+                <div class="flex justify-between">
+                    <div class="font-medium truncate text-black dark:text-white">${group.name}</div>
+                    <div class="text-xs text-gray-500 whitespace-nowrap ml-2"></div>
+                </div>
+                <div class="flex items-center">
+                    <div class="text-sm text-gray-500 truncate">
+                        ${group.members.length} members
+                    </div>
+                </div>
+            </div>
+        `;
+
+        groupElement.addEventListener("click", () => {
+            if (isMember) {
+                openGroupChat(group);
+            } else {
+                joinGroup(group.id);
+            }
+        });
+
+        elements.chatsList.appendChild(groupElement);
+    });
+}
+
 function renderSettingsList() {
     const container = elements.chatsList;
     if (!container) return;
@@ -377,7 +495,7 @@ function renderSettingsList() {
         },
         {
             icon: `<i class="fas fa-user-secret"></i>`,
-            label: "You are now visible/hidden from search",
+            label: state.hiddenFromSearch ? "You are hidden from search" : "You are visible in search",
             onClick: () => toggleSearchVisibility()
         },
         {
@@ -404,6 +522,36 @@ function renderSettingsList() {
         container.appendChild(item);
     });
 }
+
+function renderSettingsSearchResults(filteredSettings) {
+    const container = elements.chatsList;
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    if (filteredSettings.length === 0) {
+        container.innerHTML = `<div class="text-center text-gray-500 dark:text-gray-400 py-10">No matching settings found.</div>`;
+        return;
+    }
+
+    filteredSettings.forEach(setting => {
+        const item = document.createElement("div");
+        item.className = "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
+
+        item.innerHTML = `
+            <div class="w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center text-lg shrink-0">
+                ${setting.icon}
+            </div>
+            <div class="ml-3 flex-1 min-w-0">
+                <div class="font-medium truncate text-black dark:text-white">${setting.label}</div>
+            </div>
+        `;
+
+        item.onclick = setting.onClick;
+        container.appendChild(item);
+    });
+}
+
 
 
 /*
@@ -1172,22 +1320,80 @@ function playNotificationSound() {
     audio.play().catch((e) => console.log("Audio play error:", e));
 }
 
-function filterUsers(searchTerm) {
-    if (!elements.chatsList) return;
+function searchInCurrentTab(query) {
+    if (!state.isConnected) {
+        elements.chatsList.innerHTML = `<div class="text-center text-gray-500 dark:text-gray-400 py-10">Connecting to server...</div>`;
+        return;
+    }
 
-    const filteredUsers = state.allUsers.filter((user) => 
-        user.id !== state.myId && 
-        !user.hidden && 
-        (user.username.toLowerCase().includes(searchTerm) || 
-         user.id.toLowerCase().includes(searchTerm))
-    );
+    const q = query.trim().toLowerCase();
+    const settings = [
+        {
+            icon: `<i class="fas fa-copy"></i>`,
+            label: "Copy your ID",
+            onClick: () => {
+                navigator.clipboard.writeText(state.myId);
+                showToast("You copied your ID");
+            }
+        },
+        {
+            icon: `<i class="fas fa-camera"></i>`,
+            label: "Upload Profile Photo",
+            onClick: () => document.getElementById("uploadAvatarInput")?.click()
+        },
+        {
+            icon: `<i class="fas fa-user-secret"></i>`,
+            label: state.hiddenFromSearch ? "You are hidden from search" : "You are visible in search",
+            onClick: () => toggleSearchVisibility()
+        },
+        {
+            icon: `<i class="fas fa-sign-out-alt"></i>`,
+            label: "Log Out",
+            onClick: () => logoutUser()
+        }
+    ];
 
-    if (filteredUsers.length === 0 && searchTerm) {
-        elements.chatsList.innerHTML = "<div class='p-4 text-center text-gray-500'>Kullanıcı bulunamadı</div>";
-    } else {
-        renderChatsList();
+    // 🟡 CHAT
+    if (activeTabId === "btnChats" || activeTabId === "mobBtnChats") {
+        const matchedUsers = state.allUsers.filter(user =>
+            user.id !== state.myId &&
+            !user.hidden &&
+            user.username.toLowerCase().includes(q)
+        );
+        renderChatSearchResults(matchedUsers);
+    }
+
+    // 🔵 GROUP
+    else if (activeTabId === "btnGroups" || activeTabId === "mobBtnGroups") {
+        const matchedGroups = state.groups.filter(group =>
+            group.name.toLowerCase().includes(q)
+        );
+        renderGroupSearchResults(matchedGroups);
+    }
+
+    // 🟣 STORY
+    else if (activeTabId === "btnStorys" || activeTabId === "mobBtnStorys") {
+        const matchedStories = Object.values(state.currentStories).filter(story =>
+            story?.user?.username.toLowerCase().includes(q)
+        );
+        renderStorySearchResults(matchedStories);
+    }
+
+    // ⚙️ SETTINGS
+
+    
+    else if (activeTabId === "btnSettings" || activeTabId === "mobBtnSettings") {
+        const filteredSettings = settings.filter(setting =>
+            setting.label.toLowerCase().includes(query.toLowerCase())
+        );
+        renderSettingsSearchResults(filteredSettings);
+    }
+
+    else {
+        console.warn("Unknown tab for search:", activeTabId);
     }
 }
+
 
 function showToast(message) {
     // Remove existing toast
@@ -1215,6 +1421,7 @@ function showToast(message) {
  * 16. Socket Events
  */
 socket.on("connect", () => {
+    state.isConnected = true;
     initApp();
     document.querySelector("#btnSettings img").src = profilePic;
     document.querySelector("#mobBtnSettings img").src = profilePic;
@@ -1387,6 +1594,7 @@ function toggleSearchVisibility() {
     }
 
     socket.emit("update-visibility", { hidden: state.hiddenFromSearch });
+    renderSettingsList();
 }
 
 /*
