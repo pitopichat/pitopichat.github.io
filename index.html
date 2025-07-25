@@ -133,23 +133,23 @@
             
             <!-- Story content (initially hidden) -->
             <div id="story-panel" class="hidden flex-col h-full inset-0 flex flex-col items-center justify-center text-white">
-                <div class="absolute backdrop-blur-[5px] top-0 left-0 w-full px-4 py-3 flex items-center justify-between bg-opacity-50 z-40">
+                <div class="absolute backdrop-blur-[5px] top-0 left-0 w-full px-4 py-3 flex items-center justify-between bg-light dark:bg-dark bg-opacity-50 z-40">
                     <div class="flex items-center gap-2">
                         <img id="story-avatar" class="w-10 h-10 rounded-full object-cover" />
-                        <span id="story-username" class="font-semibold text-lg"></span>
+                        <span id="story-username" class="text-dark dark:text-light text-lg"></span>
                     </div>
                     <button id="delete-story-btn" class="hidden text-xl px-2 hover:text-red-400">
-                        <i class="fas fa-trash-can"></i>
+                        <i class="fas fa-trash-can text-dark dark:text-light"></i>
                     </button>
                 </div>
-                <div id="story-progress-container" class="absolute top-16 left-0 w-full h-1 px-4 flex gap-1 z-40"></div>
+                <div id="story-progress-container" class="absolute top-16 left-0 w-full h-1 flex gap-1 z-40"></div>
                 <img id="story-image" class="max-w-full max-h-full object-contain z-30" />
             </div>
 
             <!-- Chat content (initially hidden) -->
             <div id="chat-content" class="hidden flex-col h-full">
                 <!-- Chat Header -->
-                <div class="flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800">
+                <div class="flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-light dark:bg-dark">
                     <button id="back-to-chats" class="mr-3 md:hidden">
                         <i class="fas fa-arrow-left"></i>
                     </button>
@@ -168,14 +168,12 @@
                 </div>
                 
                 <!-- Chat Messages -->
-                <div id="messages-container" class="flex-1 overflow-y-auto p-4 bg-chatBg-light dark:bg-chatBg-dark">
-                    <!-- Messages will be added here -->
-                </div>
+                <div id="messages-container" class="flex-1 overflow-y-auto p-4 bg-secondaryLight dark:bg-secondaryDark"></div>
                 
                 <!-- Message Input -->
-              <div class="p-3 border-t border-gray-200 dark:border-gray-800">
+                <div class="p-3 ">
                     <div class="flex items-center">
-                        <div class="flex-1 bg-white dark:bg-gray-800 rounded-full px-4 py-2 flex items-center shadow-sm">
+                        <div class="flex-1 bg-white dark:bg-dark rounded-full px-4 py-2 flex items-center shadow-sm">
                             <input id="message-input" type="text" placeholder="Type a message..." class="flex-1 bg-transparent border-none focus:outline-none text-base">
                             <label for="fileInput" class="p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 ml-1">
                                 <i class="fas fa-paperclip"></i>
