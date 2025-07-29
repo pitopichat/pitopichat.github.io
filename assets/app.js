@@ -781,6 +781,7 @@ function logMessage(text, from) {
     elements.messagesContainer.scrollTop = elements.messagesContainer.scrollHeight;
 }
 
+
 function showSystemMessage(message) {
     if (!elements.messagesContainer) return;
 
@@ -846,8 +847,10 @@ function setupChannel() {
 
     state.dataChannel.onclose = () => handlePeerDisconnect();
     state.dataChannel.onerror = (error) => {
-        console.error("Data channel error:", error);
-        handlePeerDisconnect();
+        console.warn("⚠️ Data channel error:", error?.error?.message || error);
+        if (state.connectionStatus) {
+            handlePeerDisconnect();
+        }
     };
     state.dataChannel.onmessage = (e) => handleData(e.data);
 }
@@ -902,6 +905,7 @@ function handlePeerDisconnect() {
     // Reset state
     Object.assign(state, {
         dataChannel: null,
+        peer: null,
         activePeerConnection: null,
         connectionStatus: false,
         remoteId: null,
@@ -1565,14 +1569,17 @@ socket.on("call-rejected", ({ reason }) => {
 });
 
 socket.on("ice-candidate", async ({ candidate }) => {
-    if (state.peer) {
+    if (state.peer && state.peer.signalingState !== "closed") {
         try {
             await state.peer.addIceCandidate(new RTCIceCandidate(candidate));
         } catch (error) {
-            console.error("Error adding ICE candidate:", error);
+            console.warn("ICE candidate eklenemedi:", error.message);
         }
+    } else {
+        console.warn("ICE candidate alınırken peer kapalıydı, eklenmedi.");
     }
 });
+
 
 /*
  * 17. Settings Functions
