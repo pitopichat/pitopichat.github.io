@@ -70,6 +70,11 @@ const state = {
     messages: {},
 };
 
+const receivingFile = {
+    meta: null,
+    chunks: []
+};
+
 /*
  * 4. DOM Elements
  */
@@ -102,7 +107,77 @@ const elements = {
 function initApp() {
     setupEventListeners();
     initUIEventListeners();
+    initFileUpload();
 }
+
+function initFileUpload() {
+    const fileInput = document.getElementById("fileInput");
+    if (!fileInput) return;
+
+    fileInput.addEventListener("change", () => {
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        if (file.size > 10 * 1024 * 1024) {
+            showToast("Dosya boyutu 10MB'dan küçük olmalı.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            const base64Data = reader.result;
+            const fileMeta = {
+                type: "file",
+                name: file.name,
+                size: file.size,
+                mimeType: file.type,
+                data: base64Data
+            };
+
+            if (state.currentView === "group" && state.selectedGroup) {
+                socket.emit("send-group-message", {
+                    groupId: state.selectedGroup.id,
+                    message: `[file]${JSON.stringify(fileMeta)}[/file]`,
+                });
+                renderFilePreview(fileMeta, "me");
+            } else if (state.dataChannel && state.dataChannel.readyState === "open") {
+                sendFileInChunks(fileMeta);
+                renderFilePreview(fileMeta, "me");
+            }
+
+            fileInput.value = "";
+        };
+
+        reader.readAsDataURL(file);
+    });
+}
+
+function sendFileInChunks(fileMeta) {
+    const chunkSize = 16000; // 16KB
+    const { name, mimeType, data } = fileMeta;
+    const totalChunks = Math.ceil(data.length / chunkSize);
+
+    const meta = {
+        type: "file-meta",
+        name,
+        mimeType,
+        totalChunks
+    };
+
+    sendSafe(state.dataChannel, JSON.stringify(meta));
+
+    for (let i = 0; i < totalChunks; i++) {
+        const chunk = data.slice(i * chunkSize, (i + 1) * chunkSize);
+        const chunkMsg = {
+            type: "file-chunk",
+            index: i,
+            chunk
+        };
+        sendSafe(state.dataChannel, JSON.stringify(chunkMsg));
+    }
+}
+
+
 
 function setupEventListeners() {
     // Toggle theme
@@ -552,7 +627,70 @@ function renderSettingsSearchResults(filteredSettings) {
     });
 }
 
+function getFileIconClass(fileName = "", mimeType = "") {
+  const ext = fileName.split(".").pop().toLowerCase();
 
+  const map = {
+    pdf: "fa-file-pdf",
+    doc: "fa-file-word",
+    docx: "fa-file-word",
+    xls: "fa-file-excel",
+    xlsx: "fa-file-excel",
+    csv: "fa-file-csv",
+    ppt: "fa-file-powerpoint",
+    pptx: "fa-file-powerpoint",
+    zip: "fa-file-zipper",
+    rar: "fa-file-zipper",
+    txt: "fa-file-lines",
+    js: "fa-file-code",
+    html: "fa-file-code",
+    css: "fa-file-code",
+    json: "fa-file-code",
+  };
+
+  return map[ext] || "fa-file"; // fallback
+}
+
+
+function renderFilePreview(fileMeta, from) {
+  const { name, mimeType, data } = fileMeta;
+  let content = "";
+
+  if (mimeType.startsWith("image/")) {
+    content = `<img src="${data}" alt="${name}" class="max-w-[200px] rounded-lg" />`;
+  } else if (mimeType.startsWith("audio/")) {
+    content = `<audio controls src="${data}" class="mt-2"></audio>`;
+  } else {
+    const iconClass = getFileIconClass(name, mimeType);
+    content = `
+      <div class="flex items-center space-x-4 bg-gray-100 dark:bg-gray-800 p-3 rounded shadow-md max-w-md">
+        <div class="flex-shrink-0">
+          <i class="fas ${iconClass} text-3xl text-gray-600 dark:text-gray-300"></i>
+        </div>
+        <div class="flex-grow">
+          <p class="text-md font-semibold text-gray-900 dark:text-gray-100 truncate">${name}</p>
+          <a href="${data}" download="${name}" class="text-sm text-blue-600 hover:underline">Dosyayı indir</a>
+        </div>
+      </div>
+    `;
+  }
+
+  logMessage(content, from);
+}
+
+
+function sendSafe(channel, data) {
+    try {
+        if (channel.readyState === "open") {
+            channel.send(data);
+        } else {
+            console.warn("Kanal kapalı");
+        }
+    } catch (err) {
+        console.error("sendSafe hatası:", err);
+        showToast("Veri gönderilirken hata oluştu");
+    }
+}
 
 /*
  * 7. Navigation and Button Logic
@@ -728,26 +866,73 @@ function sendMessage() {
 }
 
 function handleData(data) {
-    if (typeof data === "string") {
-        try {
-            const msg = JSON.parse(data);
-            if (msg.type === "text") {
-                logMessage(msg.message, "them");
+    if (typeof data !== "string") return;
+
+    try {
+        const msg = JSON.parse(data);
+
+        // CHUNK sistemi
+        if (msg.type === "file-meta") {
+            receivingFile.meta = msg;
+            receivingFile.chunks = [];
+        } else if (msg.type === "file-chunk") {
+            receivingFile.chunks[msg.index] = msg.chunk;
+
+            const allReceived = (
+                receivingFile.chunks.length === receivingFile.meta.totalChunks &&
+                receivingFile.chunks.every(Boolean)
+            );
+
+            if (allReceived) {
+                const base64 = receivingFile.chunks.join("");
+                const fileMeta = {
+                    type: "file",
+                    name: receivingFile.meta.name,
+                    mimeType: receivingFile.meta.mimeType,
+                    data: base64
+                };
+
+                renderFilePreview(fileMeta, "them");
                 playNotificationSound();
-            } else if (msg.type === "typing") {
-                if (elements.chatStatus) {
-                    elements.chatStatus.textContent = "Yazıyor...";
-                    elements.chatStatus.style.color = "orange";
-                }
-            } else if (msg.type === "stop-typing") {
-                if (elements.chatStatus) {
-                    elements.chatStatus.textContent = "online";
-                    elements.chatStatus.style.color = "";
-                }
+
+                // reset
+                receivingFile.meta = null;
+                receivingFile.chunks = [];
             }
-        } catch (e) {
-            console.error("Error parsing message:", e);
+            return;
         }
+
+        // Standart file (tek parça)
+        if (msg.type === "file") {
+            renderFilePreview(msg, "them");
+            playNotificationSound();
+            return;
+        }
+
+        // Metin mesajı
+        if (msg.type === "text") {
+            logMessage(msg.message, "them");
+            playNotificationSound();
+        }
+
+        // Yazıyor durumu
+        else if (msg.type === "typing") {
+            if (elements.chatStatus) {
+                elements.chatStatus.textContent = "Yazıyor...";
+                elements.chatStatus.style.color = "orange";
+            }
+        }
+
+        // Yazma durdu
+        else if (msg.type === "stop-typing") {
+            if (elements.chatStatus) {
+                elements.chatStatus.textContent = "online";
+                elements.chatStatus.style.color = "";
+            }
+        }
+
+    } catch (e) {
+        console.error("Error parsing message:", e);
     }
 }
 
@@ -770,7 +955,7 @@ function logMessage(text, from) {
     });
 
     msgDiv.innerHTML = `
-        <div class="text-sm whitespace-pre-wrap">${processedText}</div>
+        <div class="text-sm">${processedText}</div>
         <div class="text-xs text-gray-500 dark:text-gray-400 text-${from === "me" ? "right" : "left"} mt-1">
             ${formatTime(new Date())}
         </div>
@@ -1491,10 +1676,20 @@ socket.on("group-left", (data) => {
 
 socket.on("group-message", (data) => {
     if (state.currentView === "group" && state.selectedGroup?.id === data.groupId) {
-        logMessage(`<div class="text-xs text-accent dark:text-accent text-left mt-1">${data.sender.username}</div>${data.message}`, "them");
+        let content = data.message;
+
+        if (content.startsWith("[file]") && content.endsWith("[/file]")) {
+            const fileMeta = JSON.parse(content.slice(6, -7));
+            renderFilePreview(fileMeta, "them");
+        } else {
+            content = `<div class="text-xs text-accent dark:text-accent text-left mt-1">${data.sender.username}</div>${data.message}`;
+            logMessage(content, "them");
+        }
+
         playNotificationSound();
     }
 });
+
 
 socket.on("group-error", (error) => {
     showToast(error.message || "Grup işlemi başarısız");
