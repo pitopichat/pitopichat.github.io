@@ -1049,7 +1049,7 @@ async function startCall(id) {
     if (state.connectionStatus) {
         const confirmReconnect = confirm("Zaten bir sohbete bağlısınız. Önceki sohbeti kapatıp yeni bir bağlantı kurmak istiyor musunuz?");
         if (!confirmReconnect) return;
-        handlePeerDisconnect();
+        handlePeerDisconnect(); // Mevcut bağlantıyı temizle
     }
 
     try {
@@ -1058,7 +1058,7 @@ async function startCall(id) {
 
         state.peer = createPeer();
         state.dataChannel = state.peer.createDataChannel("chat");
-        setupChannel();
+        setupChannel(); // Bu fonksiyonun data kanalını dinlemeye başladığından emin olun
 
         updateStatus(CONNECTION_STATES.CONNECTING);
 
@@ -1070,7 +1070,7 @@ async function startCall(id) {
             offer,
         });
     } catch (error) {
-        console.error("Error creating offer:", error);
+        console.error("Teklif oluşturulurken hata:", error);
         handlePeerDisconnect();
     }
 }
@@ -1147,8 +1147,6 @@ function createGroup() {
         name,
         isPrivate,
     });
-
-    hideCreateGroupModal();
 }
 
 function joinGroup(id) {
@@ -1703,11 +1701,24 @@ socket.on("incoming-call", async ({ from, offer }) => {
     state.remoteId = from;
 
     if (state.connectionStatus) {
-        socket.emit("call-rejected", {
-            targetId: from,
-            reason: "Busy",
-        });
-        return;
+        if (state.peer && state.peer.localDescription?.type === 'offer') {
+            if (state.myId < from) {
+                console.warn("Eşzamanlı teklif alındı, ancak benim ID'm daha küçük. Gelen çağrı yok sayılıyor.");
+                socket.emit("call-rejected", { targetId: from, reason: "Simultaneous offer (tie-break - myId smaller)" });
+                return;
+            } else {
+                // Karşı tarafın ID'si daha küçükse, ben onların teklifini kabul ederim.
+                console.log("Eşzamanlı teklif alındı, karşı tarafın ID'si daha küçük. Gelen çağrı kabul ediliyor.");
+                // Aşağıda gelen teklifi kabul etme işlemine devam edilecek
+            }
+        } else {
+            // Zaten bağlıyız veya meşgulüz ve eşzamanlı bir teklif durumu değil
+            socket.emit("call-rejected", {
+                targetId: from,
+                reason: "Busy",
+            });
+            return;
+        }
     }
 
     const confirmConnect = confirm(`${caller.username} sizinle bağlantı kurmak istiyor. Kabul ediyor musunuz?`);
@@ -1722,7 +1733,7 @@ socket.on("incoming-call", async ({ from, offer }) => {
     try {
         state.peer = createPeer();
         updateStatus("Yanıtlanıyor...");
-        openChat(caller);
+        openChat(caller); // openChat fonksiyonunuzun UI'ı doğru şekilde hazırladığından emin olun
 
         await state.peer.setRemoteDescription(new RTCSessionDescription(offer));
         const answer = await state.peer.createAnswer();
@@ -1736,7 +1747,7 @@ socket.on("incoming-call", async ({ from, offer }) => {
         state.connectionStatus = true;
         sessionStorage.setItem(STORAGE_KEYS.REMOTE_ID, from);
     } catch (error) {
-        console.error("Error handling incoming call:", error);
+        console.error("Gelen çağrı işlenirken hata:", error);
         handlePeerDisconnect();
     }
 });
