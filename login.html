@@ -13,8 +13,8 @@
   <meta property="og:image" content="assets/pitopi.png" />
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="assets/style.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="assets/tailwind.config.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/tailwind.config.js"></script>
 </head>
 <body class="bg-secondaryLight dark:bg-secondaryDark flex items-center justify-center min-h-screen px-4">
     <div class="bg-light dark:bg-dark rounded-2xl shadow-lg w-full max-w-md p-8 space-y-6">
@@ -45,7 +45,22 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+    // 1. SHA256 hash fonksiyonu
+    async function sha256(message) {
+        const msgBuffer = new TextEncoder().encode(message);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // 2. Kalıcı kullanıcı ID üreticisi
+    async function generatePersistentUserId(username) {
+        const salt = "pitopi_secret_v1"; // sabit gizli değer (opsiyonel: versiyonlama için)
+        const input = username.trim().toLowerCase() + "|" + salt;
+        return await sha256(input);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
         const savedUsername = localStorage.getItem('p2p_username');
         if (savedUsername) {
             window.location.href = '/pitopi';
@@ -60,16 +75,17 @@
             loginButton.disabled = usernameInput.value.trim().length < 2;
         });
 
-        loginForm.addEventListener('submit', (e) => {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const username = usernameInput.value.trim();
-            if (username.length >= 2) {
-            localStorage.setItem('p2p_username', username);
-            window.location.href = '/pitopi';
-            }
-        });
-        });
-    </script>
+            if (username.length < 2) return;
 
+            const persistentUserId = await generatePersistentUserId(username);
+            localStorage.setItem('p2p_username', username);
+            localStorage.setItem('p2p_persistent_user_id', persistentUserId);
+            window.location.href = '/pitopi';
+        });
+    });
+    </script>
 </body>
 </html>
