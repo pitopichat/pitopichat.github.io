@@ -8,6 +8,7 @@ const STORAGE_KEYS = {
     HIDDEN: "p2p_hidden",
     REMOTE_ID: "p2p_remote_id",
     CONNECTION_STATUS: "p2p_connection_status",
+    LANG: "p2p_current_lang",
 };
 
 const CONNECTION_STATES = {
@@ -1831,7 +1832,7 @@ function changeLanguage() {
             icon: `<img src="https://img.icons8.com/?size=64&id=J6RJcdGoJomQ&format=png"></img>`,
             label: "Türkçe",
             onClick: () => {
-                currentLang = "tr",
+                localStorage.setItem(STORAGE_KEYS.LANG, "tr"),
                 translatePage()
             }
         },
@@ -1839,7 +1840,7 @@ function changeLanguage() {
             icon: `<img src="https://img.icons8.com/?size=64&id=MTPUWUmsAKfT&format=png"></img>`,
             label: "English",
             onClick: () => {
-                currentLang = "en",
+                localStorage.setItem(STORAGE_KEYS.LANG, "en"),
                 translatePage()
             }
         }
@@ -1888,7 +1889,7 @@ window.sendMessage = sendMessage;
  * 19. translations
  */
 
-let currentLang = 'tr';
+let currentLang = localStorage.getItem(STORAGE_KEYS.LANG)|| "en";
 let translations = {};
 
 fetch('assets/translations.json')
