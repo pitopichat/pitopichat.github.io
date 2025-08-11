@@ -51,8 +51,7 @@
                 <div class="search-wrapper items-center relative flex flex-1 w-full flex-nowrap flex-row">
                     <img class="md:hidden w-10 h-10 rounded-full text-white flex items-center justify-center" src="https://devnar.github.io/pitopi/assets/pitopi.png" alt="Pitopi">
                     <div class="relative w-full p-2">
-                        <input id="searchId" type="text" placeholder="Search..." 
-                            class="w-full pl-4 pr-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-base">
+                        <input id="searchId" type="text" placeholder="Search..." data-i18n-placeholder="search_placeholder" class="w-full pl-4 pr-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-base">
                         <div class="absolute right-4 top-4 text-gray-400">
                             <i class="fas fa-search"></i>
                         </div>
@@ -62,14 +61,14 @@
             
             <!-- Chat Tabs -->
              <div id="TabChat" class="flex border-b border-gray-200 dark:border-gray-800">
-                <p class="flex-1 py-3 p-5 font-medium">
+                <p data-i18n="chats_tab_label" class="flex-1 py-3 p-5 font-medium">
                     Chats
                 </p>
             </div>
 
             <!-- Group Tabs -->
             <div id="TabGroup" class="hidden flex border-b border-gray-200 dark:border-gray-800">
-                <p class="flex-1 py-3 p-5 font-medium">
+                <p data-i18n="groups_tab_label" class="flex-1 py-3 p-5 font-medium">
                     Groups
                 </p>
                 <button onclick="const groupId=prompt('Enter the group ID you want to join:');if(groupId&&groupId.trim()!==''){joinGroup(groupId.trim())}else{alert('You have not entered a valid ID.')}" class="flex-1 max-w-20 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-800">
@@ -82,7 +81,7 @@
 
             <!-- Story Tabs -->
             <div id="TabStory" class="hidden flex border-b border-gray-200 dark:border-gray-800">
-                <p class="flex-1 py-3 p-5 font-medium">
+                <p data-i18n="storys_tab_label" class="flex-1 py-3 p-5 font-medium">
                     Storys
                 </p>
                 <button onclick="elements.storyInput.click()" class="flex-1 max-w-20 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-800">
@@ -92,7 +91,7 @@
 
             <!-- Settings Tabs -->
              <div id="TabSetting" class="hidden border-b border-gray-200 dark:border-gray-800">
-                <p class="flex-1 py-3 p-5 font-medium">
+                <p data-i18n="settings_tab_label" class="flex-1 py-3 p-5 font-medium">
                     Settings
                 </p>
             </div>
@@ -126,8 +125,8 @@
                 <div class="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center mb-4">
                     <i class="fas fa-comment-alt text-gray-400 text-2xl"></i>
                 </div>
-                <h3 class="text-xl font-medium mb-2">Select a chat to start messaging</h3>
-                <p class="text-gray-500 dark:text-gray-400 text-center max-w-md px-4">
+                <h3 data-i18n="select_chat_title" class="text-xl font-medium mb-2">Select a chat to start messaging</h3>
+                <p data-i18n="select_chat_description" class="text-gray-500 dark:text-gray-400 text-center max-w-md px-4">
                     Choose from online users to begin a secure peer-to-peer conversation
                 </p>
             </div>
@@ -175,7 +174,7 @@
                 <div class="p-3 ">
                     <div class="flex items-center">
                         <div class="flex-1 bg-white dark:bg-dark rounded-full px-4 py-2 flex items-center shadow-sm">
-                            <input id="message-input" type="text" placeholder="Type a message..." class="flex-1 bg-transparent border-none focus:outline-none text-base">
+                            <input id="message-input" type="text" placeholder="Type a message..." data-i18n-placeholder="message_input_placeholder" class="flex-1 bg-transparent border-none focus:outline-none text-base">
                             <label for="fileInput" class="p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 ml-1">
                                 <i class="fas fa-paperclip"></i>
                             </label>

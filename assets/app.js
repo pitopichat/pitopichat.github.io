@@ -119,7 +119,7 @@ function initFileUpload() {
         if (!file) return;
 
         if (file.size > 10 * 1024 * 1024) {
-            showToast("Dosya boyutu 10MB'dan küçük olmalı.");
+            showToast(t("file_limit"));
             return;
         }
 
@@ -556,26 +556,33 @@ function renderSettingsList() {
     if (!container) return;
 
     container.innerHTML = "";
-
     const settings = [
         {
             icon: `<i class="fas fa-copy"></i>`,
-            label: "Copy your ID",
-            onClick: () => {navigator.clipboard.writeText(state.myId);showToast("You copied your ID")}
+            label: t("copy_id"),
+            onClick: () => {
+                navigator.clipboard.writeText(state.myId);
+                showToast(t("copied_id"));
+            }
         },
         {
             icon: `<i class="fas fa-camera"></i>`,
-            label: "Upload Profile Photo",
+            label: t("upload_photo"),
             onClick: () => document.getElementById("uploadAvatarInput")?.click()
         },
         {
             icon: `<i class="fas fa-user-secret"></i>`,
-            label: state.hiddenFromSearch ? "You are hidden from search" : "You are visible in search",
+            label: state.hiddenFromSearch ? t("hidden_from_search") : t("visible_in_search"),
             onClick: () => toggleSearchVisibility()
         },
         {
+            icon: `<i class="fas fa-globe"></i>`,
+            label: t("select_language"),
+            onClick: () => changeLanguage()
+        },
+        {
             icon: `<i class="fas fa-sign-out-alt"></i>`,
-            label: "Log Out",
+            label: t("log_out"),
             onClick: () => logoutUser()
         }
     ];
@@ -688,7 +695,6 @@ function sendSafe(channel, data) {
         }
     } catch (err) {
         console.error("sendSafe hatası:", err);
-        showToast("Veri gönderilirken hata oluştu");
     }
 }
 
@@ -749,7 +755,7 @@ mobileButtons.forEach(({ id, action }) => {
 function handleProfilePictureUpload() {
     const file = elements.uploadAvatarInput.files[0];
     if (!file?.type.startsWith("image/")) {
-        showToast("Lütfen geçerli bir resim dosyası seçin.");
+        showToast(t("image_file_valid"));
         return;
     }
 
@@ -759,7 +765,7 @@ function handleProfilePictureUpload() {
         localStorage.setItem(STORAGE_KEYS.PROFILE_PIC, base64Image);
         document.querySelector("#btnSettings img").src = base64Image;
         document.querySelector("#mobBtnSettings img").src = base64Image;
-        showToast("Profil resmi güncellendi");
+        showToast(t("pp_update"));
         socket.emit("update-profile-pic", base64Image);
     };
     reader.readAsDataURL(file);
@@ -769,14 +775,14 @@ function handleStoryUpload() {
     const file = elements.storyInput.files[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
-        showToast("Lütfen bir resim veya video dosyası seçin.");
+    if (!file.type.startsWith("image/")) {
+        showToast(t("image_file_valid"));
         return;
     }
 
     // Check file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
-        showToast("Dosya boyutu 10MB'dan küçük olmalıdır.");
+        showToast(t("file_limit"));
         return;
     }
 
@@ -791,7 +797,7 @@ function handleStoryUpload() {
             caption: "",
         });
 
-        showToast("Hikaye başarıyla yüklendi!");
+        showToast(t("story_upload"));
     };
     reader.readAsDataURL(file);
 }
@@ -1042,7 +1048,7 @@ function setupChannel() {
 
 async function startCall(id) {
     if (!id) {
-        showToast("Lütfen bir hedef ID girin");
+        showToast(t("select_chat_title"));
         return;
     }
 
@@ -1139,7 +1145,7 @@ function createGroup() {
     const isPrivate = document.getElementById("group-private-checkbox").checked;
 
     if (!name) {
-        showToast("Grup adı gereklidir");
+        showToast(t("required_group_name"));
         return;
     }
 
@@ -1153,7 +1159,7 @@ function joinGroup(id) {
     const groupId = id || document.getElementById("join-group-id-input").value.trim();
 
     if (!groupId) {
-        showToast("Grup ID gereklidir");
+        showToast(t("required_group_id"));
         return;
     }
 
@@ -1233,7 +1239,6 @@ function openStory(user) {
     const stories = storyData?.stories?.filter(s => s.type === "image") || [];
 
     if (!stories.length) {
-        showToast("Bu kullanıcıya ait hikaye yok.");
         return;
     }
 
@@ -1428,7 +1433,7 @@ function toggleFloatingMenu() {
     if (currentView === "group" && selectedGroup) {
         copyBtn.onclick = () => {
             navigator.clipboard.writeText(selectedGroup.id);
-            showToast("Group ID kopyalandı");
+            showToast(t("copied_id"));
             menu.classList.add("hidden");
         };
 
@@ -1443,7 +1448,7 @@ function toggleFloatingMenu() {
     } else if (currentView === "chat") {
         copyBtn.onclick = () => {
             navigator.clipboard.writeText(selectedUser.id);
-            showToast("Kullanıcı ID kopyalandı");
+            showToast(t("copied_id"));
             menu.classList.add("hidden");
         };
 
@@ -1517,25 +1522,30 @@ function searchInCurrentTab(query) {
     const settings = [
         {
             icon: `<i class="fas fa-copy"></i>`,
-            label: "Copy your ID",
+            label: t("copy_id"),
             onClick: () => {
                 navigator.clipboard.writeText(state.myId);
-                showToast("You copied your ID");
+                showToast(t("copied_id"));
             }
         },
         {
             icon: `<i class="fas fa-camera"></i>`,
-            label: "Upload Profile Photo",
+            label: t("upload_photo"),
             onClick: () => document.getElementById("uploadAvatarInput")?.click()
         },
         {
             icon: `<i class="fas fa-user-secret"></i>`,
-            label: state.hiddenFromSearch ? "You are hidden from search" : "You are visible in search",
+            label: state.hiddenFromSearch ? t("hidden_from_search") : t("visible_in_search"),
             onClick: () => toggleSearchVisibility()
         },
         {
+            icon: `<i class="fas fa-globe"></i>`,
+            label: t("select_language"),
+            onClick: () => changeLanguage()
+        },
+        {
             icon: `<i class="fas fa-sign-out-alt"></i>`,
-            label: "Log Out",
+            label: t("log_out"),
             onClick: () => logoutUser()
         }
     ];
@@ -1654,19 +1664,19 @@ socket.on("my-groups-updated", (myGroups) => {
 });
 
 socket.on("group-created", (data) => {
-    showToast(`"${data.group.name}" grubu başarıyla oluşturuldu!`);
+    showToast(`"${data.group.name}" ${t("created_group")}`);
     state.myGroups.push(data.group);
     renderGroupsList();
 });
 
 socket.on("group-joined", (data) => {
-    showToast(`"${data.group.name}" grubuna katıldınız!`);
+    showToast(`"${data.group.name}" ${t("join_group")}`);
     state.myGroups.push(data.group);
     renderGroupsList();
 });
 
 socket.on("group-left", (data) => {
-    showToast(`"${data.groupName}" grubundan ayrıldınız`);
+    showToast(`"${data.groupName}" `);
     state.myGroups = state.myGroups.filter((g) => g.id !== data.groupId);
     renderGroupsList();
     closeGroupChat();
@@ -1690,7 +1700,7 @@ socket.on("group-message", (data) => {
 
 
 socket.on("group-error", (error) => {
-    showToast(error.message || "Grup işlemi başarısız");
+    showToast(error.message);
     closeGroupChat();
 });
 
@@ -1764,7 +1774,7 @@ socket.on("call-answered", async ({ answer }) => {
 
 socket.on("call-rejected", ({ reason }) => {
     updateStatus("Bağlantı reddedildi: " + reason);
-    showToast("Bağlanmaya çalıştığınız kişi meşgul veya bağlantıyı reddetti");
+    showToast(t("busy"));
     sessionStorage.removeItem(STORAGE_KEYS.REMOTE_ID);
 
     state.activePeerConnection?.close();
@@ -1790,6 +1800,7 @@ socket.on("ice-candidate", async ({ candidate }) => {
 /*
  * 17. Settings Functions
  */
+
 function logoutUser() {
     localStorage.removeItem(STORAGE_KEYS.USERNAME);
     localStorage.removeItem(STORAGE_KEYS.PERSISTENT_USER_ID);
@@ -1801,13 +1812,55 @@ function toggleSearchVisibility() {
     localStorage.setItem(STORAGE_KEYS.HIDDEN, state.hiddenFromSearch);
 
     if (state.hiddenFromSearch) { 
-        showToast("You are now hidden from search");
+        showToast(t("hidden_from_search"));
     } else {
-        showToast("You are now visible in search");
+        showToast(t("visible_in_search"));
     }
 
     socket.emit("update-visibility", { hidden: state.hiddenFromSearch });
     renderSettingsList();
+}
+
+function changeLanguage() {
+    const container = elements.chatsList;
+    if (!container) return;
+
+    container.innerHTML = "";
+    const settings = [
+        {
+            icon: `<img src="https://img.icons8.com/?size=64&id=J6RJcdGoJomQ&format=png"></img>`,
+            label: "Türkçe",
+            onClick: () => {
+                currentLang = "tr",
+                translatePage()
+            }
+        },
+        {
+            icon: `<img src="https://img.icons8.com/?size=64&id=MTPUWUmsAKfT&format=png"></img>`,
+            label: "English",
+            onClick: () => {
+                currentLang = "en",
+                translatePage()
+            }
+        }
+    ];
+
+    settings.forEach(setting => {
+        const item = document.createElement("div");
+        item.className = "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
+
+        item.innerHTML = `
+            <div class="w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center text-lg shrink-0">
+                ${setting.icon}
+            </div>
+            <div class="ml-3 flex-1 min-w-0">
+                <div class="font-medium truncate text-black dark:text-white">${setting.label}</div>
+            </div>
+        `;
+
+        item.onclick = setting.onClick;
+        container.appendChild(item);
+    });
 }
 
 /*
@@ -1830,3 +1883,33 @@ document.addEventListener("click", (e) => {
 });
 
 window.sendMessage = sendMessage;
+
+/*
+ * 19. translations
+ */
+
+let currentLang = 'tr';
+let translations = {};
+
+fetch('assets/translations.json')
+  .then(res => res.json())
+  .then(data => {
+    translations = data;
+    translatePage();
+  });
+
+function t(key) {
+  return translations[currentLang]?.[key] || key;
+}
+
+function translatePage() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    el.textContent = t(key);
+  });
+
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    el.setAttribute('placeholder', t(key));
+  });
+}
