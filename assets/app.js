@@ -1833,6 +1833,7 @@ function changeLanguage() {
             label: "Türkçe",
             onClick: () => {
                 localStorage.setItem(STORAGE_KEYS.LANG, "tr"),
+                currentLang = "tr",
                 translatePage()
             }
         },
@@ -1841,6 +1842,7 @@ function changeLanguage() {
             label: "English",
             onClick: () => {
                 localStorage.setItem(STORAGE_KEYS.LANG, "en"),
+                currentLang = "en",
                 translatePage()
             }
         }
