@@ -101,6 +101,10 @@ const elements = {
     get uploadAvatarInput() { return document.getElementById("uploadAvatarInput"); },
 };
 
+
+let currentLang = localStorage.getItem(STORAGE_KEYS.LANG)|| "en";
+let translations = {};
+
 /*
  * 5. Initialization
  */
@@ -262,18 +266,22 @@ function initProfilePictureUpload() {
 /*
  * 6. UI Render Functions
  */
-const renderNotEmpty = [
-    "How about being the first? 👀", 
-    "Maybe they went to make coffee ☕", 
-    "They're staring blankly at the screen 😶", 
-    "They might be lost online 🌐",
-];
+const renderNotEmpty = t("renderNotEmpty"); 
+
+
+function getRandomMessage(key) {
+  const arr = translations[currentLang]?.[key];
+  if (Array.isArray(arr)) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+  return key; // eğer bulunmazsa anahtarı döndür
+}
 
 function renderChatsList() {
     if (!elements.chatsList) return;
 
     if (!state.isConnected) {
-        elements.chatsList.innerHTML = `<div class="text-center text-gray-500 py-10">Connecting to server...</div>`;
+        elements.chatsList.innerHTML = `<div class="text-center text-gray-500 py-10">${t("connecting")}</div>`;
         return;
     }
 
@@ -317,7 +325,7 @@ function renderChatsList() {
     });
 
     if (!hasChats) {
-        elements.chatsList.innerHTML = `<div class="text-center text-gray-500 dark:text-gray-400 py-10">${renderNotEmpty[Math.floor(Math.random() * renderNotEmpty.length)]}</div>`;
+        elements.chatsList.innerHTML = `<div class="text-center text-gray-500 dark:text-gray-400 py-10">${getRandomMessage("renderNotEmpty")}</div>`;
     }
 }
 
@@ -355,7 +363,7 @@ function renderStoriesList() {
     if (!container) return;
 
     if (!state.isConnected) {
-        elements.chatsList.innerHTML = `<div class="text-center text-gray-500 py-10">Connecting to server...</div>`;
+        elements.chatsList.innerHTML = `<div class="text-center text-gray-500 py-10">${t("connecting")}</div>`;
         return;
     }
 
@@ -395,7 +403,7 @@ function renderStoriesList() {
     });
 
     if (!hasStories) {
-        container.innerHTML = `<div class="text-center text-gray-500 dark:text-gray-400 py-10">${renderNotEmpty[Math.floor(Math.random() * renderNotEmpty.length)]}</div>`;
+        container.innerHTML = `<div class="text-center text-gray-500 dark:text-gray-400 py-10">${getRandomMessage("renderNotEmpty")}</div>`;
     }
 }
 
@@ -437,7 +445,7 @@ function renderGroupsList() {
     let hasGroups = false;
 
     if (!state.isConnected) {
-        elements.chatsList.innerHTML = `<div class="text-center text-gray-500 py-10">Connecting to server...</div>`;
+        elements.chatsList.innerHTML = `<div class="text-center text-gray-500 py-10">${t("connecting")}</div>`;
         return;
     }
 
@@ -506,7 +514,7 @@ function renderGroupsList() {
     });
 
     if (!hasGroups) {
-        elements.chatsList.innerHTML = `<div class="text-center text-gray-500 dark:text-gray-400 py-10">${renderNotEmpty[Math.floor(Math.random() * renderNotEmpty.length)]}</div>`;
+        elements.chatsList.innerHTML = `<div class="text-center text-gray-500 dark:text-gray-400 py-10">${getRandomMessage("renderNotEmpty")}</div>`;
     }
 }
 
@@ -1525,7 +1533,7 @@ function playNotificationSound() {
 
 function searchInCurrentTab(query) {
     if (!state.isConnected) {
-        elements.chatsList.innerHTML = `<div class="text-center text-gray-500 dark:text-gray-400 py-10">Connecting to server...</div>`;
+        elements.chatsList.innerHTML = `<div class="text-center text-gray-500 dark:text-gray-400 py-10">${t("connecting")}</div>`;
         return;
     }
 
@@ -1900,9 +1908,6 @@ window.sendMessage = sendMessage;
 /*
  * 19. translations
  */
-
-let currentLang = localStorage.getItem(STORAGE_KEYS.LANG)|| "en";
-let translations = {};
 
 fetch('assets/translations.json')
   .then(res => res.json())
