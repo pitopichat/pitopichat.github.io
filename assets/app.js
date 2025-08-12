@@ -1250,6 +1250,7 @@ function openStory(user) {
     const progressContainer = document.getElementById("story-progress-container");
     const usernameLabel = document.getElementById("story-username");
     const avatar = document.getElementById("story-avatar");
+    const viewersCountDiv = document.getElementById("story-viewersCount");
 
     elements.noChatPlaceholder?.classList.add("hidden");
     panel.classList.remove("hidden");
@@ -1281,6 +1282,9 @@ function openStory(user) {
 
         const story = stories[index];
         img.src = story.content;
+
+        viewersCountDiv.innerHTML = `<i class="fas fa-eye"></i>  ${story.viewersCount || 0}`;
+
         if (user.persistentUserId === state.myPersistentId) {
             const deleteBtn = document.getElementById("delete-story-btn");
             if (deleteBtn) {
