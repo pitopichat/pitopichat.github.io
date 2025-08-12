@@ -1283,6 +1283,12 @@ function openStory(user) {
         const story = stories[index];
         img.src = story.content;
 
+         socket.emit("story-viewed", {
+            persistentUserId: user.persistentUserId,
+            storyId: story.id,                 
+            viewerId: state.myPersistentId 
+        });
+
         viewersCountDiv.innerHTML = `<i class="fas fa-eye"></i>  ${story.viewersCount || 0}`;
 
         if (user.persistentUserId === state.myPersistentId) {
