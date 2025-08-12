@@ -25,7 +25,14 @@
     "required_group_id": "Grup ID gereklidir",
     "created_group": "grubu oluşturuldu",
     "join_group": "grubuna katıldınız",
-    "left_group": "grubundan ayrıldınız"
+    "left_group": "grubundan ayrıldınız",
+    "connecting": "Sunucuya bağlanılıyor...",
+    "renderNotEmpty": [
+      "İlk olmak ister misin? 👀",
+      "Belki kahve almaya gittiler ☕",
+      "Ekrana boş boş bakıyorlar 😶",
+      "İnternette kaybolmuş olabilirler 🌐"
+    ]
 
   },
   "en": {
@@ -54,6 +61,13 @@
     "required_group_id": "Group ID required",
     "created_group": "group was created",
     "join_group": "you joined the group",
-    "left_group": "You left the group"
+    "left_group": "You left the group",
+    "connecting": "Connecting to server...",
+    "renderNotEmpty": [
+      "How about being the first? 👀",
+      "Maybe they went to make coffee ☕",
+      "They're staring blankly at the screen 😶",
+      "They might be lost online 🌐"
+    ]
   }
 }
