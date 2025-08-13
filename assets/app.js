@@ -1104,13 +1104,18 @@ function handlePeerDisconnect() {
 
     // Reset state
     Object.assign(state, {
-        dataChannel: null,
         peer: null,
+        isConnected: false,
+        dataChannel: null,
         activePeerConnection: null,
         connectionStatus: false,
         remoteId: null,
         receivedBuffers: [],
         incomingFileInfo: null,
+        activeChat: null,
+        selectedUser: null,
+        selectedGroup: null,
+        activeGroupId: null,
     });
 
     // Clear connection state in localStorage
@@ -1750,7 +1755,7 @@ socket.on("incoming-call", async ({ from, offer }) => {
         }
     }
 
-    const confirmConnect = confirm(`${caller.username} sizinle bağlantı kurmak istiyor. Kabul ediyor musunuz?`);
+    const confirmConnect = confirm(`${caller.username} ${t("confirm_connect")}`);
     if (!confirmConnect) {
         socket.emit("call-rejected", {
             targetId: from,
@@ -1762,7 +1767,7 @@ socket.on("incoming-call", async ({ from, offer }) => {
     try {
         state.peer = createPeer();
         updateStatus("Yanıtlanıyor...");
-        openChat(caller); // openChat fonksiyonunuzun UI'ı doğru şekilde hazırladığından emin olun
+        openChat(caller);
 
         await state.peer.setRemoteDescription(new RTCSessionDescription(offer));
         const answer = await state.peer.createAnswer();
@@ -1785,6 +1790,7 @@ socket.on("call-answered", async ({ answer }) => {
     try {
         await state.peer.setRemoteDescription(new RTCSessionDescription(answer));
         state.connectionStatus = true;
+        showToast(t("call_answered"))
     } catch (error) {
         console.error("Error handling call answer:", error);
         handlePeerDisconnect();
