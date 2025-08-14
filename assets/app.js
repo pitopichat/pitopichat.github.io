@@ -1853,6 +1853,15 @@ function changeLanguage() {
     container.innerHTML = "";
     const settings = [
         {
+            icon: `<img src="https://img.icons8.com/?size=96&id=pHfpq4E7vg9Y&format=png"></img>`,
+            label: "Azərbaycan dili",
+            onClick: () => {
+                localStorage.setItem(STORAGE_KEYS.LANG, "az"),
+                currentLang = "az",
+                translatePage()
+            }
+        },
+        {
             icon: `<img src="https://img.icons8.com/?size=64&id=J6RJcdGoJomQ&format=png"></img>`,
             label: "Türkçe",
             onClick: () => {
@@ -1862,11 +1871,20 @@ function changeLanguage() {
             }
         },
         {
-            icon: `<img src="https://img.icons8.com/?size=64&id=MTPUWUmsAKfT&format=png"></img>`,
+            icon: `<img src="https://img.icons8.com/?size=96&id=fIgZUHgwc76e&format=png"></img>`,
             label: "English",
             onClick: () => {
                 localStorage.setItem(STORAGE_KEYS.LANG, "en"),
                 currentLang = "en",
+                translatePage()
+            }
+        },
+        {
+            icon: `<img src="https://img.icons8.com/?size=96&id=vioRCshpCBKv&format=png"></img>`,
+            label: "Русский",
+            onClick: () => {
+                localStorage.setItem(STORAGE_KEYS.LANG, "ru"),
+                currentLang = "ru",
                 translatePage()
             }
         }
