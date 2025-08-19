@@ -463,7 +463,7 @@ function renderGroupsList() {
             <div class="ml-3 flex-1 min-w-0">
                 <div class="flex justify-between">
                     <div class="font-medium truncate text-black dark:text-white">${group.name}</div>
-                    <div class="text-xs text-gray-500 whitespace-nowrap ml-2">You are a member</div>
+                    <div class="text-xs text-gray-500 whitespace-nowrap ml-2">${t("group_status_member")}</div>
                 </div>
                 <div class="flex items-center">
                     <div class="text-sm text-gray-500 truncate">
@@ -496,7 +496,7 @@ function renderGroupsList() {
             <div class="ml-3 flex-1 min-w-0">
                 <div class="flex justify-between">
                     <div class="font-medium truncate text-black dark:text-white">${group.name}</div>
-                    <div class="text-xs text-gray-500 whitespace-nowrap ml-2">You are not a member</div>
+                    <div class="text-xs text-gray-500 whitespace-nowrap ml-2">${t("group_status_not_member")}</div>
                 </div>
                 <div class="flex items-center">
                     <div class="text-sm text-gray-500 truncate">
