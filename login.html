@@ -63,7 +63,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         const savedUsername = localStorage.getItem('p2p_username');
         if (savedUsername) {
-            window.location.href = '/pitopi';
+            window.location.href = '/';
             return;
         }
 
@@ -83,7 +83,7 @@
             const persistentUserId = await generatePersistentUserId(username);
             localStorage.setItem('p2p_username', username);
             localStorage.setItem('p2p_persistent_user_id', persistentUserId);
-            window.location.href = '/pitopi';
+            window.location.href = '/';
         });
     });
     </script>
