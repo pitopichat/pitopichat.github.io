@@ -8,14 +8,13 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": "/pitopi/index.html",
-  "scope": "/pitopi/",
-  "id": "/pitopi/",
+  "start_url": "/index.html",
+  "scope": "/",
+  "id": "/index.html",
   "background_color": "#212121",
   "theme_color": "#212121",
   "display": "standalone",
   "orientation": "portrait",
   "description": "Real-Time and Secure Peer to Peer Chat",
-  "lang": "en",
-  "categories": ["chatting", "social", "chat"]
+  "categories": ["communication", "social", "productivity", "messaging"]
 }
