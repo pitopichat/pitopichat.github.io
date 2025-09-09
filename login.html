@@ -1,91 +1,274 @@
 <!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pitopi - Login</title>
-  <link rel="icon" href="https://aardaakpinar.github.io/assets/images/logos/pitopi.png" />
-  <meta name="description" content="Real-Time and Secure Peer to Peer Chat" />
-  <meta property="og:title" content="Pitopi" />
-  <meta property="og:description" content="Real-Time and Secure Peer to Peer Chat" />
-  <meta property="og:url" content="https://aardaakpinar.github.io/" />
-  <meta property="og:type" content="website" />
-  <meta property="og:image" content="https://aardaakpinar.github.io/assets/images/logos/pitopi.png" />
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="assets/style.css">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="assets/tailwind.config.js"></script>
-</head>
-<body class="bg-secondaryLight dark:bg-secondaryDark flex items-center justify-center min-h-screen px-4">
-    <div class="bg-light dark:bg-dark rounded-2xl shadow-lg w-full max-w-md p-8 space-y-6">
-        <div class="text-center">
-            <img src="https://aardaakpinar.github.io/assets/images/logos/pitopi.png" class="mx-auto w-16 h-16 mb-4" alt="Pitopi logo" />
-            <h1 class="text-2xl font-bold text-dark dark:text-light">Pitopi</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Real-time and secure chat</p>
+<html lang="en">
+    <head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="description" content="Real-Time and Secure Peer to Peer Chat" />
+        <meta property="og:title" content="Pitopi" />
+        <meta property="og:description" content="Real-Time and Secure Peer to Peer Chat" />
+        <meta property="og:url" content="https://aardaakpinar.github.io/" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://aardaakpinar.github.io/assets/images/logos/pitopi.png" />
+        <title>Pitopi</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <link rel="icon" href="https://aardaakpinar.github.io/assets/images/logos/pitopi.png" />
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="assets/tailwind.config.js"></script>
+    </head>
+    <body class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 min-h-screen">
+        <link rel="stylesheet" href="assets/style.css" />
+        <!-- Mobile Layout (default) -->
+        <div class="lg:hidden flex items-center justify-center min-h-screen px-4">
+            <div class="w-full max-w-md space-y-6">
+                <div class="text-center mb-8">
+                    <img src="https://aardaakpinar.github.io/assets/images/logos/pitopi.png" class="mx-auto w-16 h-16 mb-4" alt="Pitopi logo" />
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Pitopi</h1>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Connect securely with real-time messaging</p>
+                </div>
+
+                    <form class="space-y-6" id="desktop-login-form">
+                        <!-- Changed to only Username field -->
+                        <div>
+                            <label for="desktop-username" class="block text-sm font-medium text-gray-900 dark:text-white mb-2">Username</label>
+                            <input
+                                type="text"
+                                id="desktop-username"
+                                name="username"
+                                placeholder="Enter your username"
+                                required
+                                minlength="2"
+                                class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-accent transition-all"
+                            />
+                        </div>
+
+                        <!-- Updated language options to 4 specific languages in native scripts, alphabetically ordered -->
+                        <div>
+                            <label for="mobile-language" class="block text-sm font-medium text-gray-900 dark:text-white mb-2">Language</label>
+                            <select
+                                id="mobile-language"
+                                name="language"
+                                class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-accent transition-all"
+                            >
+                                <option value="az">Azərbaycan dili</option>
+                                <option value="en">English</option>
+                                <option value="ru">Русский</option>
+                                <option value="tr">Türkçe</option>
+                            </select>
+                        </div>
+
+                        <!-- Changed to checkbox for Private profile visibility -->
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                                Profile Visibility
+                            </label>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="desktop-private-profile" name="private" class="sr-only peer" />
+                                <div
+                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-accent dark:peer-focus:ring-accent rounded-full peer dark:bg-gray-700 peer-checked:bg-accent transition-colors"
+                                ></div>
+                                <span class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full border border-gray-300 peer-checked:translate-x-5 transition-transform"></span>
+                                <span class="ml-3 text-sm text-gray-900 dark:text-white">
+                                    Private Profile
+                                </span>
+                            </label>
+                        </div>
+
+                        <button
+                            type="submit"
+                            id="desktop-login-button"
+                            disabled
+                            class="w-full py-3 bg-accent hover:bg-accentHover text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]"
+                        >
+                            Sign In
+                        </button>
+                    </form>
+            </div>
         </div>
 
-        <form class="space-y-4" id="login-form">
-            <div>
-                <label for="username" class="block text-sm text-dark dark:text-light mb-1">Username</label>
-                <input
-                    type="text"
-                    id="username"
-                    name="username"
-                    placeholder="Enter your username"
-                    required
-                    minlength="2"
-                    class="w-full px-4 py-2 bg-secondaryLight dark:bg-secondaryDark border border-gray-300 dark:border-gray-700 text-dark dark:text-light rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
-                />
+        <!-- Desktop Layout (lg and up) -->
+        <div class="hidden lg:flex min-h-screen">
+            <!-- Left Side - Illustration -->
+            <div class="flex-1 relative overflow-hidden bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-600 flex items-center justify-center">
+                <!-- Background Clouds -->
+                <div class="absolute inset-0">
+                    <!-- Large Cloud 1 -->
+                    <div class="cloud w-32 h-16 absolute top-20 left-20 animate-float opacity-90"></div>
+
+                    <!-- Large Cloud 2 -->
+                    <div class="cloud w-40 h-20 absolute top-32 right-32 animate-float-delayed opacity-80"></div>
+
+                    <!-- Medium Cloud 3 -->
+                    <div class="cloud w-24 h-12 absolute bottom-40 left-32 animate-float opacity-70"></div>
+
+                    <!-- Small Cloud 4 -->
+                    <div class="cloud w-20 h-10 absolute top-60 left-1/2 animate-float-delayed opacity-60"></div>
+
+                    <!-- Small Cloud 5 -->
+                    <div class="cloud w-16 h-8 absolute bottom-60 right-20 animate-float opacity-50"></div>
+                </div>
+
+                <!-- Paper Airplane -->
+                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                    <div class="paper-plane animate-plane-fly"></div>
+                </div>
+
+                <!-- Welcome Text -->
+                <div class="relative z-10 text-center text-white">
+                    <h2 class="text-4xl font-bold mb-4 text-balance">Welcome to Pitopi</h2>
+                    <p class="text-xl opacity-90 text-pretty">Connect securely with real-time messaging</p>
+                </div>
             </div>
 
-            <button type="submit" id="login-button" disabled class="w-full py-2 bg-accent hover:bg-accentHover text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
-                Login
-            </button>
-        </form>
-    </div>
+            <!-- Right Side - Login Form -->
+            <div class="flex-1 flex items-center justify-center p-8">
+                <div class="w-full max-w-md space-y-6">
+                    <div class="text-center mb-8">
+                        <img src="https://aardaakpinar.github.io/assets/images/logos/pitopi.png" class="mx-auto w-16 h-16 mb-4" alt="Pitopi logo" />
+                        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Pitopi</h1>
+                    </div>
 
-    <script>
-    // 1. SHA256 hash fonksiyonu
-    async function sha256(message) {
-        const msgBuffer = new TextEncoder().encode(message);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
+                    <form class="space-y-6" id="desktop-login-form">
+                        <!-- Changed to only Username field -->
+                        <div>
+                            <label for="desktop-username" class="block text-sm font-medium text-gray-900 dark:text-white mb-2">Username</label>
+                            <input
+                                type="text"
+                                id="desktop-username"
+                                name="username"
+                                placeholder="Enter your username"
+                                required
+                                minlength="2"
+                                class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-accent transition-all"
+                            />
+                        </div>
 
-    // 2. Kalıcı kullanıcı ID üreticisi
-    async function generatePersistentUserId(username) {
-        const salt = "pitopi_secret_v1"; // sabit gizli değer (opsiyonel: versiyonlama için)
-        const input = username.trim().toLowerCase() + "|" + salt;
-        return await sha256(input);
-    }
+                        <!-- Updated language options to 4 specific languages in native scripts, alphabetically ordered -->
+                        <div>
+                            <label for="mobile-language" class="block text-sm font-medium text-gray-900 dark:text-white mb-2">Language</label>
+                            <select
+                                id="mobile-language"
+                                name="language"
+                                class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-accent transition-all"
+                            >
+                                <option value="az">Azərbaycan dili</option>
+                                <option value="en">English</option>
+                                <option value="ru">Русский</option>
+                                <option value="tr">Türkçe</option>
+                            </select>
+                        </div>
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const savedUsername = localStorage.getItem('p2p_username');
-        if (savedUsername) {
-            window.location.href = '/';
-            return;
-        }
+                        <!-- Changed to checkbox for Private profile visibility -->
 
-        const loginForm = document.getElementById('login-form');
-        const usernameInput = document.getElementById('username');
-        const loginButton = document.getElementById('login-button');
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                                Profile Visibility
+                            </label>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="desktop-private-profile" name="private" class="sr-only peer" />
+                                <div
+                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-accent dark:peer-focus:ring-accent rounded-full peer dark:bg-gray-700 peer-checked:bg-accent transition-colors"
+                                ></div>
+                                <span class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full border border-gray-300 peer-checked:translate-x-5 transition-transform"></span>
+                                <span class="ml-3 text-sm text-gray-900 dark:text-white">
+                                    Private Profile
+                                </span>
+                            </label>
+                        </div>
 
-        usernameInput.addEventListener('input', () => {
-            loginButton.disabled = usernameInput.value.trim().length < 2;
-        });
+                        <button
+                            type="submit"
+                            id="desktop-login-button"
+                            disabled
+                            class="w-full py-3 bg-accent hover:bg-accentHover text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]"
+                        >
+                            Sign In
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <script>
+            // SHA256 hash function
+            async function sha256(message) {
+                const msgBuffer = new TextEncoder().encode(message);
+                const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+            }
 
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = usernameInput.value.trim();
-            if (username.length < 2) return;
+            // Persistent user ID generator
+            async function generatePersistentUserId(username) {
+                const salt = "pitopi_secret_v1";
+                const input = username.trim().toLowerCase() + "|" + salt;
+                return await sha256(input);
+            }
 
-            const persistentUserId = await generatePersistentUserId(username);
-            localStorage.setItem('p2p_username', username);
-            localStorage.setItem('p2p_persistent_user_id', persistentUserId);
-            window.location.href = '/';
-        });
-    });
-    </script>
-</body>
+            document.addEventListener("DOMContentLoaded", () => {
+                const savedUsername = localStorage.getItem("p2p_username");
+                if (savedUsername) {
+                    window.location.href = "/";
+                    return;
+                }
+
+                // Mobile form handlers
+                const mobileForm = document.getElementById("login-form");
+                const mobileUsernameInput = document.getElementById("username");
+                const mobileLoginButton = document.getElementById("login-button");
+                const mobileLanguageSelect = document.getElementById("mobile-language");
+
+                // Desktop form handlers
+                const desktopForm = document.getElementById("desktop-login-form");
+                const desktopUsernameInput = document.getElementById("desktop-username");
+                const desktopLoginButton = document.getElementById("desktop-login-button");
+                const desktopLanguageSelect = document.getElementById("language");
+
+                // Mobile form logic
+                if (mobileUsernameInput && mobileLoginButton && mobileLanguageSelect) {
+                    mobileUsernameInput.addEventListener("input", () => {
+                        mobileLoginButton.disabled = mobileUsernameInput.value.trim().length < 2;
+                    });
+
+                    mobileForm.addEventListener("submit", async (e) => {
+                        e.preventDefault();
+                        const username = mobileUsernameInput.value.trim();
+                        if (username.length < 2) return;
+
+                        const isPrivate = document.getElementById("private-profile").checked;
+                        const language = mobileLanguageSelect.value;
+
+                        const persistentUserId = await generatePersistentUserId(username);
+                        localStorage.setItem("p2p_username", username);
+                        localStorage.setItem("p2p_persistent_user_id", persistentUserId);
+                        localStorage.setItem("p2p_hidden", isPrivate);
+                        localStorage.setItem("p2p_current_lang", language);
+                        window.location.href = "/";
+                    });
+                }
+
+                // Desktop form logic
+                if (desktopUsernameInput && desktopLoginButton && desktopLanguageSelect) {
+                    desktopUsernameInput.addEventListener("input", () => {
+                        desktopLoginButton.disabled = desktopUsernameInput.value.trim().length < 2;
+                    });
+
+                    desktopForm.addEventListener("submit", async (e) => {
+                        e.preventDefault();
+                        const username = desktopUsernameInput.value.trim();
+                        if (username.length < 2) return;
+
+                        const isPrivate = document.getElementById("desktop-private-profile").checked;
+                        const language = desktopLanguageSelect.value;
+
+                        const persistentUserId = await generatePersistentUserId(username);
+                        localStorage.setItem("p2p_username", username);
+                        localStorage.setItem("p2p_persistent_user_id", persistentUserId);
+                        localStorage.setItem("p2p_hidden", isPrivate);
+                        localStorage.setItem("p2p_current_lang", language);
+                        window.location.href = "/";
+                    });
+                }
+            });
+        </script>
+    </body>
 </html>
