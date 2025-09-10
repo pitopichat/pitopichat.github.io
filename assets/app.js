@@ -922,7 +922,13 @@ async function startCall(id) {
     if (state.connectionStatus) {
         const confirmReconnect = confirm("Zaten bir sohbete bağlısınız. Önceki sohbeti kapatıp yeni bir bağlantı kurmak istiyor musunuz?");
         if (!confirmReconnect) return;
-        handlePeerDisconnect(); // Mevcut bağlantıyı temizle
+        handlePeerDisconnect();
+    }
+
+    // Mevcut peer varsa kapat
+    if (state.peer) {
+        state.peer.close();
+        state.peer = null;
     }
 
     try {
@@ -931,22 +937,29 @@ async function startCall(id) {
 
         state.peer = createPeer();
         state.dataChannel = state.peer.createDataChannel("chat");
-        setupChannel(); // Bu fonksiyonun data kanalını dinlemeye başladığından emin olun
+        setupChannel();
 
         updateStatus(CONNECTION_STATES.CONNECTING);
 
-        const offer = await state.peer.createOffer();
-        await state.peer.setLocalDescription(offer);
+        // Sadece stable durumdaysa offer oluştur
+        if (state.peer.signalingState === "stable") {
+            const offer = await state.peer.createOffer();
+            await state.peer.setLocalDescription(offer);
 
-        socket.emit("call-user", {
-            targetId: state.remoteId,
-            offer,
-        });
+            socket.emit("call-user", {
+                targetId: state.remoteId,
+                offer,
+            });
+        } else {
+            console.warn("PeerConnection stable değil, offer oluşturulmadı.");
+        }
+
     } catch (error) {
         console.error("Teklif oluşturulurken hata:", error);
         handlePeerDisconnect();
     }
 }
+
 
 function handlePeerDisconnect() {
     if (!state.connectionStatus) return;
@@ -957,8 +970,29 @@ function handlePeerDisconnect() {
 
     // Clean up resources
     closeChat();
+    
+    // Clean up listeners
+    if (state.dataChannel) {
+        state.dataChannel.onopen = null;
+        state.dataChannel.onclose = null;
+        state.dataChannel.onmessage = null;
+        state.dataChannel.onerror = null;
+    }
+
+    if (state.activePeerConnection) {
+        state.activePeerConnection.onicecandidate = null;
+        state.activePeerConnection.onconnectionstatechange = null;
+        state.activePeerConnection.ontrack = null;
+    }
+
+    // Close connections
     state.dataChannel?.close();
     state.activePeerConnection?.close();
+
+    // Notify server
+    if (state.remoteId) {
+        socket.emit("connection-ended", { targetId: state.remoteId });
+    }
 
     // Reset state
     Object.assign(state, {
@@ -974,7 +1008,7 @@ function handlePeerDisconnect() {
         selectedUser: null,
     });
 
-    // Clear connection state in localStorage
+    // Clear connection state in storage
     sessionStorage.removeItem(STORAGE_KEYS.REMOTE_ID);
     localStorage.removeItem(STORAGE_KEYS.CONNECTION_STATUS);
 
