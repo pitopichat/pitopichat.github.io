@@ -59,12 +59,8 @@ const state = {
     currentStoryIndex: 0,
     currentUserStories: [],
     storyTimer: null,
-    groups: [],
-    myGroups: [],
-    activeGroupId: null,
     currentView: "home",
     selectedUser: null,
-    selectedGroup: null,
     activeChat: null,
     activeFilter: "all",
     chats: [],
@@ -81,7 +77,6 @@ const receivingFile = {
  */
 const elements = {
     get TabChat() { return document.getElementById("TabChat"); },
-    get TabGroup() { return document.getElementById("TabGroup"); },
     get TabStory() { return document.getElementById("TabStory"); },
     get TabSetting() { return document.getElementById("TabSetting"); },
     get chatsList() { return document.getElementById("chats-list"); },
@@ -139,16 +134,8 @@ function initFileUpload() {
                 data: base64Data
             };
 
-            if (state.currentView === "group" && state.selectedGroup) {
-                socket.emit("send-group-message", {
-                    groupId: state.selectedGroup.id,
-                    message: `[file]${JSON.stringify(fileMeta)}[/file]`,
-                });
-                renderFilePreview(fileMeta, "me");
-            } else if (state.dataChannel && state.dataChannel.readyState === "open") {
-                sendFileInChunks(fileMeta);
-                renderFilePreview(fileMeta, "me");
-            }
+            sendFileInChunks(fileMeta);
+            renderFilePreview(fileMeta, "me");
 
             fileInput.value = "";
         };
@@ -295,11 +282,15 @@ function renderChatsList() {
         hasChats = true;
 
         const chatElement = document.createElement("div");
-        chatElement.className = "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
+        chatElement.className =
+            "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
         chatElement.dataset.userId = user.id;
 
-        const isOnline = true;
-        const lastSeen = isOnline ? "online" : "last seen recently";
+        // ✅ Durum belirleme
+        let statusText = "müsait";
+        if (state.selectedUser && state.selectedUser.id === user.id) {
+            statusText = "meşgul";
+        }
 
         chatElement.innerHTML = `
             <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-medium shrink-0">
@@ -311,7 +302,7 @@ function renderChatsList() {
                 </div>
                 <div class="flex items-center">
                     <div class="text-sm text-gray-500 truncate">
-                        ${lastSeen}
+                        ${statusText}
                     </div>
                 </div>
             </div>
@@ -339,8 +330,15 @@ function renderChatSearchResults(users) {
 
     users.forEach((user) => {
         const chatElement = document.createElement("div");
-        chatElement.className = "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
+        chatElement.className =
+            "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
         chatElement.dataset.userId = user.id;
+
+        // ✅ Durum belirleme
+        let statusText = "müsait";
+        if (state.selectedUser && state.selectedUser.id === user.id) {
+            statusText = "meşgul";
+        }
 
         chatElement.innerHTML = `
             <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-medium shrink-0">
@@ -348,7 +346,7 @@ function renderChatSearchResults(users) {
             </div>
             <div class="ml-3 flex-1 min-w-0">
                 <div class="font-medium truncate text-black dark:text-white">${user.username}</div>
-                <div class="text-sm text-gray-500 truncate">online</div>
+                <div class="text-sm text-gray-500 truncate">${statusText}</div>
             </div>
         `;
 
@@ -357,6 +355,7 @@ function renderChatSearchResults(users) {
         elements.chatsList.appendChild(chatElement);
     });
 }
+
 
 function renderStoriesList() {
     const container = elements.chatsList;
@@ -435,128 +434,6 @@ function renderStorySearchResults(stories) {
         storyElement.addEventListener("click", () => openStory(user));
 
         elements.chatsList.appendChild(storyElement);
-    });
-}
-
-
-function renderGroupsList() {
-    elements.chatsList.innerHTML = "";
-
-    let hasGroups = false;
-
-    if (!state.isConnected) {
-        elements.chatsList.innerHTML = `<div class="text-center text-gray-500 py-10">${t("connecting")}</div>`;
-        return;
-    }
-
-    state.myGroups.forEach((group) => {
-        hasGroups = true;
-
-        const chatElement = document.createElement("div");
-        chatElement.className = "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
-        chatElement.dataset.groupId = group.id;
-
-        chatElement.innerHTML = `
-            <div class="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center text-white font-medium shrink-0">
-                ${group.name.charAt(0).toUpperCase()}
-            </div>
-            <div class="ml-3 flex-1 min-w-0">
-                <div class="flex justify-between">
-                    <div class="font-medium truncate text-black dark:text-white">${group.name}</div>
-                    <div class="text-xs text-gray-500 whitespace-nowrap ml-2">${t("group_status_member")}</div>
-                </div>
-                <div class="flex items-center">
-                    <div class="text-sm text-gray-500 truncate">
-                        ${group.members.length} members
-                    </div>
-                </div>
-            </div>
-        `;
-
-        chatElement.addEventListener("click", () => {
-            openGroupChat(group);
-        });
-
-        elements.chatsList.appendChild(chatElement);
-    });
-
-    const groupsToShow = state.groups.filter((group) => !state.myGroups.some((my) => my.id === group.id));
-
-    groupsToShow.forEach((group) => {
-        hasGroups = true;
-
-        const chatElement = document.createElement("div");
-        chatElement.className = "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
-        chatElement.dataset.groupId = group.id;
-
-        chatElement.innerHTML = `
-            <div class="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center text-white font-medium shrink-0">
-                ${group.name.charAt(0).toUpperCase()}
-            </div>
-            <div class="ml-3 flex-1 min-w-0">
-                <div class="flex justify-between">
-                    <div class="font-medium truncate text-black dark:text-white">${group.name}</div>
-                    <div class="text-xs text-gray-500 whitespace-nowrap ml-2">${t("group_status_not_member")}</div>
-                </div>
-                <div class="flex items-center">
-                    <div class="text-sm text-gray-500 truncate">
-                        ${group.members.length} members
-                    </div>
-                </div>
-            </div>
-        `;
-
-        chatElement.addEventListener("click", () => {
-            joinGroup(group.id);
-        });
-
-        elements.chatsList.appendChild(chatElement);
-    });
-
-    if (!hasGroups) {
-        elements.chatsList.innerHTML = `<div class="text-center text-gray-500 dark:text-gray-400 py-10">${getRandomMessage("renderNotEmpty")}</div>`;
-    }
-}
-
-function renderGroupSearchResults(groups) {
-    elements.chatsList.innerHTML = "";
-
-    if (!groups.length) {
-        elements.chatsList.innerHTML = `<div class="text-center text-gray-500 dark:text-gray-400 py-10">No matching groups found.</div>`;
-        return;
-    }
-
-    groups.forEach((group) => {
-        const groupElement = document.createElement("div");
-        groupElement.className = "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
-        groupElement.dataset.groupId = group.id;
-
-        groupElement.innerHTML = `
-            <div class="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center text-white font-medium shrink-0">
-                ${group.name.charAt(0).toUpperCase()}
-            </div>
-            <div class="ml-3 flex-1 min-w-0">
-                <div class="flex justify-between">
-                    <div class="font-medium truncate text-black dark:text-white">${group.name}</div>
-                    <div class="text-xs text-gray-500 whitespace-nowrap ml-2"></div>
-                </div>
-                <div class="flex items-center">
-                    <div class="text-sm text-gray-500 truncate">
-                        ${group.members.length} members
-                    </div>
-                </div>
-            </div>
-        `;
-
-        groupElement.addEventListener("click", () => {
-            if (isMember) {
-                openGroupChat(group);
-            } else {
-                joinGroup(group.id);
-            }
-        });
-
-        elements.chatsList.appendChild(groupElement);
     });
 }
 
@@ -714,7 +591,6 @@ let activeTabId = "btnChats";
 
 const sidebarButtons = [
     { id: "btnChats", action: renderChats },
-    { id: "btnGroups", action: renderGroups },
     { id: "btnStorys", action: renderStorys },
     { id: "btnSettings", action: renderSettings }
 ];
@@ -743,7 +619,6 @@ sidebarButtons.forEach(({ id, action }) => {
 
 const mobileButtons = [
     { id: "mobBtnChats", action: renderChats },
-    { id: "mobBtnGroups", action: renderGroups },
     { id: "mobBtnStorys", action: renderStorys },
     { id: "mobBtnSettings", action: renderSettings }
 ];
@@ -819,10 +694,6 @@ function renderChats() {
     renderChatsList();
     showOnlyTab(TabChat);
 }
-function renderGroups() {
-    renderGroupsList();
-    showOnlyTab(TabGroup);
-}
 function renderStorys() {
     renderStoriesList();
     showOnlyTab(TabStory);
@@ -834,7 +705,6 @@ function renderSettings() {
 
 function showOnlyTab(tab) {
     TabChat.classList.add("hidden");
-    TabGroup.classList.add("hidden");
     TabStory.classList.add("hidden");
     TabSetting.classList.add("hidden");
     tab.classList.remove("hidden");
@@ -848,18 +718,6 @@ function showOnlyTab(tab) {
 function sendMessage() {
     const text = elements.messageInput?.value.trim();
     if (!text) return;
-
-    if (state.currentView === "group" && state.selectedGroup) {
-        // Send group message
-        socket.emit("send-group-message", {
-            groupId: state.selectedGroup.id,
-            message: text,
-        });
-
-        logMessage(text, "me");
-        elements.messageInput.value = "";
-        return;
-    }
 
     if (!state.dataChannel || state.dataChannel.readyState !== "open") {
         showSystemMessage("Mesaj gönderilemedi. Bağlantı kapalı.");
@@ -1114,8 +972,6 @@ function handlePeerDisconnect() {
         incomingFileInfo: null,
         activeChat: null,
         selectedUser: null,
-        selectedGroup: null,
-        activeGroupId: null,
     });
 
     // Clear connection state in localStorage
@@ -1124,118 +980,6 @@ function handlePeerDisconnect() {
 
     if (elements.sendMessageBtn) elements.sendMessageBtn.disabled = true;
 }
-
-/*
- * 12. Group Chat Screen
- */
-function showGroupCreationForm() {
-    const container = document.getElementById('chats-list');
-
-    container.innerHTML = `
-        <div class="dark:text-light text-dark p-4 space-y-4 text-sm">
-        <label class=block>
-            <span>Grup Adı:</span>
-            <input class="dark:text-light text-dark bg-gray-100 dark:bg-gray-800 py-2 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent my-4 pl-4 placeholder-gray-500 pr-4 rounded-lg text-base w-full"id=group-name-input placeholder="Örn. Geliştiriciler"></label>
-            <label class="flex cursor-pointer items-center space-x-3">
-            <input class="accent-accent border border-dark dark:accent-accentHover dark:border-light peer rounded size-4"id=group-private-checkbox type=checkbox>
-            <span class="dark:text-light text-dark text-base select-none">Özel Grup</span>
-        </label>
-        <div class="flex justify-end space-x-2">
-            <button class="dark:text-light text-dark bg-secondaryLight dark:bg-secondaryDark py-2 dark:hover:bg-gray-700 hover:bg-gray-300 px-4 rounded"onclick=cancelGroupCreation()>İptal</button>
-            <button class="py-2 px-4 rounded bg-accent hover:bg-accentHover text-light"onclick=createGroup()>Oluştur</button>
-        </div>
-    </div>
-    `;
-}
-
-function cancelGroupCreation() {
-    const container = document.getElementById('chats-list');
-    container.innerHTML = `<div class="p-4 text-center text-gray-500">Grup listesi yükleniyor...</div>`;
-    renderGroupsList();
-}
-
-function createGroup() {
-    const name = document.getElementById("group-name-input").value.trim();
-    const isPrivate = document.getElementById("group-private-checkbox").checked;
-
-    if (!name) {
-        showToast(t("required_group_name"));
-        return;
-    }
-
-    socket.emit("create-group", {
-        name,
-        isPrivate,
-    });
-}
-
-function joinGroup(id) {
-    const groupId = id || document.getElementById("join-group-id-input").value.trim();
-
-    if (!groupId) {
-        showToast(t("required_group_id"));
-        return;
-    }
-
-    socket.emit("join-group", { groupId });
-}
-
-function leaveGroup() {
-    if (!state.selectedGroup) return;
-
-    const confirmLeave = confirm(`"${state.selectedGroup.name}" grubundan ayrılmak istediğinizden emin misiniz?`);
-    if (!confirmLeave) return;
-
-    socket.emit("leave-group", { groupId: state.selectedGroup.id });
-}
-
-function openGroupChat(group) {
-    state.activeChat = group;
-    state.selectedGroup = group;
-    state.currentView = "group";
-
-    prepareChatUI();
-
-    if (elements.chatName) elements.chatName.textContent = group.name;
-    if (elements.chatAvatar) {
-        elements.chatAvatar.innerHTML = `<div class="w-full h-full rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">${group.name.charAt(0).toUpperCase()}</div>`;
-    }
-    if (elements.chatStatus) elements.chatStatus.textContent = `${group.members.length} members`;
-
-    socket.emit("join-group-room", { groupId: group.id });
-}
-
-
-function closeGroupChat() {
-    // Leave group room
-    if (state.selectedGroup?.id) {
-        socket.emit("leave-group-room", { groupId: state.selectedGroup.id });
-    }
-
-    // Clear state
-    state.activeChat = null;
-    state.selectedGroup = null;
-    state.currentView = null;
-
-    // Hide chat UI
-    if (elements.chatContent) {
-        elements.chatContent.classList.add("hidden");
-        elements.chatContent.classList.remove("flex");
-    }
-    if (elements.chatPanel) {
-        elements.chatPanel.classList.remove("mobile-chat-open");
-        elements.chatPanel.classList.add("mobile-chat-closed");
-    }
-    if (elements.noChatPlaceholder) {
-        elements.noChatPlaceholder.classList.remove("hidden");
-    }
-
-    // Clear messages
-    if (elements.messagesContainer) {
-        elements.messagesContainer.innerHTML = "";
-    }
-}
-
 
 /*
  * 13. Story Screen
@@ -1448,41 +1192,23 @@ function toggleFloatingMenu() {
         return;
     }
 
-    const { currentView, selectedUser, selectedGroup } = state;
+    const { currentView, selectedUser } = state;
 
     const copyBtn = document.getElementById("copy-id-btn");
-    const chatBtn = document.getElementById("leave-chat-btn");
-    const leaveBtn = document.getElementById("leave-group-btn");
+    const leaveBtn = document.getElementById("leave-btn");
 
-    if (currentView === "group" && selectedGroup) {
-        copyBtn.onclick = () => {
-            navigator.clipboard.writeText(selectedGroup.id);
-            showToast(t("copied_id"));
-            menu.classList.add("hidden");
-        };
-
-        chatBtn.classList.add("hidden");
-        
-        leaveBtn.classList.remove("hidden");
-        leaveBtn.onclick = () => {
-            leaveGroup();
-            menu.classList.add("hidden");
-        };
-
-    } else if (currentView === "chat") {
+    if (currentView === "chat") {
         copyBtn.onclick = () => {
             navigator.clipboard.writeText(selectedUser.id);
             showToast(t("copied_id"));
             menu.classList.add("hidden");
         };
 
-        chatBtn.classList.remove("hidden");
-        chatBtn.onclick = () => {
+        leaveBtn.classList.remove("hidden");
+        leaveBtn.onclick = () => {
             handlePeerDisconnect();
             menu.classList.add("hidden");
         }
-
-        leaveBtn.classList.add("hidden");
     }
 
     menu.classList.remove("hidden");
@@ -1584,14 +1310,6 @@ function searchInCurrentTab(query) {
         renderChatSearchResults(matchedUsers);
     }
 
-    // 🔵 GROUP
-    else if (activeTabId === "btnGroups" || activeTabId === "mobBtnGroups") {
-        const matchedGroups = state.groups.filter(group =>
-            group.name.toLowerCase().includes(q)
-        );
-        renderGroupSearchResults(matchedGroups);
-    }
-
     // 🟣 STORY
     else if (activeTabId === "btnStorys" || activeTabId === "mobBtnStorys") {
         const matchedStories = Object.values(state.currentStories).filter(story =>
@@ -1675,57 +1393,6 @@ socket.on("user-disconnected", (userId) => {
 socket.on("stories-updated", (stories) => {
     state.currentStories = stories;
     if (activeTabId == "btnStorys" || activeTabId == "mobBtnStorys") renderStoriesList(stories);
-});
-
-socket.on("groups-updated", (groups) => {
-    state.groups = groups;
-    if (activeTabId == "btnGroups" || activeTabId == "mobBtnGroups") renderGroupsList();
-});
-
-socket.on("my-groups-updated", (myGroups) => {
-    state.myGroups = myGroups;
-    if (activeTabId == "btnGroups" || activeTabId == "mobBtnGroups") renderGroupsList();
-});
-
-socket.on("group-created", (data) => {
-    showToast(`"${data.group.name}" ${t("created_group")}`);
-    state.myGroups.push(data.group);
-    renderGroupsList();
-});
-
-socket.on("group-joined", (data) => {
-    showToast(`"${data.group.name}" ${t("join_group")}`);
-    state.myGroups.push(data.group);
-    renderGroupsList();
-});
-
-socket.on("group-left", (data) => {
-    showToast(`"${data.groupName}" `);
-    state.myGroups = state.myGroups.filter((g) => g.id !== data.groupId);
-    renderGroupsList();
-    closeGroupChat();
-});
-
-socket.on("group-message", (data) => {
-    if (state.currentView === "group" && state.selectedGroup?.id === data.groupId) {
-        let content = data.message;
-
-        if (content.startsWith("[file]") && content.endsWith("[/file]")) {
-            const fileMeta = JSON.parse(content.slice(6, -7));
-            renderFilePreview(fileMeta, "them");
-        } else {
-            content = `<div class="text-xs text-accent dark:text-accent text-left mt-1">${data.sender.username}</div>${data.message}`;
-            logMessage(content, "them");
-        }
-
-        playNotificationSound();
-    }
-});
-
-
-socket.on("group-error", (error) => {
-    showToast(error.message);
-    closeGroupChat();
 });
 
 socket.on("incoming-call", async ({ from, offer }) => {

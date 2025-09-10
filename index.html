@@ -30,9 +30,6 @@
                 <button id="btnChats" class="w-12 h-12 rounded-full flex items-center justify-center text-accent hover:bg-gray-200 dark:hover:bg-gray-800">
                     <i class="fas fa-comment-alt text-xl"></i>
                 </button>
-                <button id="btnGroups" class="w-12 h-12 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-800">
-                    <i class="fas fa-users text-xl"></i>
-                </button>
                 <button id="btnStorys" class="w-12 h-12 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-800">
                     <i class="fas fa-circle-notch text-xl"></i>
                 </button>
@@ -66,19 +63,6 @@
                 </p>
             </div>
 
-            <!-- Group Tabs -->
-            <div id="TabGroup" class="hidden flex border-b border-gray-200 dark:border-gray-800">
-                <p data-i18n="groups_tab_label" class="flex-1 py-3 p-5 font-medium">
-                    Groups
-                </p>
-                <button onclick="const groupId=prompt('Enter the group ID you want to join:');if(groupId&&groupId.trim()!==''){joinGroup(groupId.trim())}else{alert('You have not entered a valid ID.')}" class="flex-1 max-w-20 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-800">
-                    <i class="fas fa-circle-check"></i>
-                </button>
-                <button onclick="showGroupCreationForm()" class="flex-1 max-w-20 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-800">
-                    <i class="fas fa-circle-plus"></i>
-                </button>
-            </div>
-
             <!-- Story Tabs -->
             <div id="TabStory" class="hidden flex border-b border-gray-200 dark:border-gray-800">
                 <p data-i18n="storys_tab_label" class="flex-1 py-3 p-5 font-medium">
@@ -105,9 +89,6 @@
             <div class="md:hidden flex border-t border-gray-200 dark:border-gray-800">
                 <button id="mobBtnChats" class="flex-1 py-3 text-accent hover:bg-gray-200 dark:hover:bg-gray-800">
                     <i class="fas fa-comment-alt"></i>
-                </button>
-                <button id="mobBtnGroups" class="flex-1 py-3 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-800">
-                    <i class="fas fa-users"></i>
                 </button>
                 <button id="mobBtnStorys"  class="flex-1 py-3 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-800">
                     <i class="fas fa-circle-notch"></i>
@@ -193,8 +174,7 @@
 
     <div id="floating-menu" class="absolute right-4 top-20 bg-white dark:bg-dark shadow-lg rounded-md w-48 z-50 hidden">
         <button id="copy-id-btn" class="w-full text-left px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-800 text-md rounded-md">ID'yi Kopyala</button>
-        <button id="leave-chat-btn" class="w-full text-left px-4 py-2 hover:bg-red-200 dark:hover:bg-red-800 text-md rounded-md hidden">Bağlantıyı Kes</button>
-        <button id="leave-group-btn" class="w-full text-left px-4 py-2 hover:bg-red-200 dark:hover:bg-red-800 text-md rounded-md hidden">Gruptan Çık</button>
+        <button id="leave-btn" class="w-full text-left px-4 py-2 hover:bg-red-200 dark:hover:bg-red-800 text-md rounded-md hidden">Bağlantıyı Kes</button>
     </div>
 
     <input type="file" id="uploadAvatarInput" accept="image/*" style="display: none;" />
