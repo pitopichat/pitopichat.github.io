@@ -286,11 +286,8 @@ function renderChatsList() {
             "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
         chatElement.dataset.userId = user.id;
 
-        // ✅ Durum belirleme
-        let statusText = "müsait";
-        if (state.selectedUser && state.selectedUser.id === user.id) {
-            statusText = "meşgul";
-        }
+        // ✅ Durum artık sunucudan geliyor
+        const statusText = user.busy ? t("text-busy") : t("text-available");
 
         chatElement.innerHTML = `
             <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-medium shrink-0">
@@ -334,11 +331,8 @@ function renderChatSearchResults(users) {
             "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
         chatElement.dataset.userId = user.id;
 
-        // ✅ Durum belirleme
-        let statusText = "müsait";
-        if (state.selectedUser && state.selectedUser.id === user.id) {
-            statusText = "meşgul";
-        }
+        // ✅ Durum sunucudan
+        const statusText = user.busy ? t("text-busy") : t("text-available");
 
         chatElement.innerHTML = `
             <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-medium shrink-0">
@@ -355,7 +349,6 @@ function renderChatSearchResults(users) {
         elements.chatsList.appendChild(chatElement);
     });
 }
-
 
 function renderStoriesList() {
     const container = elements.chatsList;
