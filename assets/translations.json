@@ -1,5 +1,7 @@
 {
     "tr": {
+        "text-busy": "Meşgul",
+        "text-available": "Müsait",
         "busy": "Bağlanmaya çalıştığınız kişi meşgul veya bağlantıyı reddetti",
         "confirm_connect": "sizinle bağlantı kurmak istiyor. Kabul ediyor musunuz?",
         "call_answered": "Bağlantı Kuruldu",
@@ -27,6 +29,8 @@
     },
 
     "en": {
+        "text-busy": "Busy",
+        "text-available": "Available",
         "busy": "The person you are trying to connect to is busy or has refused the connection.",
         "confirmConnect": "wants to connect with you. Do you accept?",
         "call_answered": "Connection Established",
@@ -54,6 +58,8 @@
     },
 
     "ru": {
+        "text-busy": "Занят",
+        "text-available": "Свободен",
         "busy": "Пользователь, с которым вы пытаетесь связаться, занят или отклонил соединение",
         "confirm_connect": "хочет с вами связаться. Принять?",
         "call_answered": "Соединение установлено",
@@ -81,6 +87,8 @@
     },
 
     "az": {
+        "text-busy": "məşğul",
+        "text-available": "mövcud",
         "busy": "Zəng etdiyiniz şəxs məşğuldur və ya zəngi rədd etdi",
         "confirm_connect": "sizinlə əlaqə qurmaq istəyir. Qəbul edirsinizmi?",
         "call_answered": "Əlaqə quruldu",
