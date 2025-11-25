@@ -538,12 +538,22 @@ function getFileIconClass(fileName = "", mimeType = "") {
 }
 
 
+// Escape special HTML characters to prevent XSS
+function escapeHtml(unsafe) {
+  return String(unsafe)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function renderFilePreview(fileMeta, from) {
   const { name, mimeType, data } = fileMeta;
   let content = "";
 
   if (mimeType.startsWith("image/")) {
-    content = `<img src="${data}" alt="${name}" class="max-w-[200px] rounded-lg" />`;
+    content = `<img src="${data}" alt="${escapeHtml(name)}" class="max-w-[200px] rounded-lg" />`;
   } else if (mimeType.startsWith("audio/")) {
     content = `<audio controls src="${data}" class="mt-2"></audio>`;
   } else {
@@ -554,8 +564,8 @@ function renderFilePreview(fileMeta, from) {
           <i class="fas ${iconClass} text-3xl text-gray-600 dark:text-gray-300"></i>
         </div>
         <div class="flex-grow">
-          <p class="text-md font-semibold text-gray-900 dark:text-gray-100 truncate">${name}</p>
-          <a href="${data}" download="${name}" class="text-sm text-blue-600 hover:underline">Dosyayı indir</a>
+          <p class="text-md font-semibold text-gray-900 dark:text-gray-100 truncate">${escapeHtml(name)}</p>
+          <a href="${data}" download="${name}" class="text-sm text-blue-600 hover:underline">Dosyayı indir</a>	          <a href="${data}" download="${escapeHtml(name)}" class="text-sm text-blue-600 hover:underline">Dosyayı indir</a>
         </div>
       </div>
     `;
