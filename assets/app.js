@@ -826,9 +826,20 @@ function logMessage(text, from) {
     }`;
 
     const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const processedText = text.replace(urlRegex, (url) => {
-        return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">${url}</a>`;
+    // Split the text into [text, url, text, url, ...], escape text, insert safe anchors for URLs.
+    let processedText = '';
+    let lastIndex = 0;
+    text.replace(urlRegex, function(url, offset) {
+        // Escape the text prior to this URL
+        processedText += escapeHtml(text.slice(lastIndex, offset));
+        // Escape URL for attributes and for text display
+        const safeURL = escapeHtml(url);
+        processedText += `<a href="${safeURL}" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">${safeURL}</a>`;
+        lastIndex = offset + url.length;
+        return url; // required for replace contract
     });
+    // Add the rest of the string after last URL
+    processedText += escapeHtml(text.slice(lastIndex));
 
     msgDiv.innerHTML = `
         <div class="text-sm">${processedText}</div>
