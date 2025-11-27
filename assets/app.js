@@ -820,28 +820,40 @@ function logMessage(text, from) {
 
     const msgDiv = document.createElement("div");
     msgDiv.className = `max-w-[80%] px-3 py-2 rounded-lg ${
-        from === "me" 
-            ? "bg-messageBg-light dark:bg-messageBg-dark rounded-br-none" 
+        from === "me"
+            ? "bg-messageBg-light dark:bg-messageBg-dark rounded-br-none"
             : "bg-messageBg-light dark:bg-messageBg-dark rounded-bl-none"
     }`;
 
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const processedText = text.replace(urlRegex, (url) => {
-        return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">${url}</a>`;
+    // Process URLs safely
+    const parts = text.split(/(https?:\/\/[^\s]+)/g);
+    parts.forEach(part => {
+        if (part.match(/https?:\/\/[^\s]+/)) {
+            const a = document.createElement("a");
+            a.href = part;
+            a.target = "_blank";
+            a.rel = "noopener noreferrer";
+            a.style.textDecoration = "underline";
+            a.textContent = part;
+            msgDiv.appendChild(a);
+        } else {
+            msgDiv.appendChild(document.createTextNode(part));
+        }
     });
 
-    msgDiv.innerHTML = `
-        <div class="text-sm">${processedText}</div>
-        <div class="text-xs text-gray-500 dark:text-gray-400 text-${from === "me" ? "right" : "left"} mt-1">
-            ${formatTime(new Date())}
-        </div>
-    `;
+    const timeDiv = document.createElement("div");
+    timeDiv.className = `text-xs text-gray-500 dark:text-gray-400 text-${from === "me" ? "right" : "left"} mt-1`;
+    timeDiv.textContent = formatTime(new Date());
+
+    const textContainer = document.createElement("div");
+    textContainer.className = "text-sm";
+    textContainer.appendChild(msgDiv.cloneNode(true));
 
     wrapper.appendChild(msgDiv);
+    wrapper.appendChild(timeDiv);
     elements.messagesContainer.appendChild(wrapper);
     elements.messagesContainer.scrollTop = elements.messagesContainer.scrollHeight;
 }
-
 
 function showSystemMessage(message) {
     if (!elements.messagesContainer) return;
