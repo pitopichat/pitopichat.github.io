@@ -69,35 +69,70 @@ const state = {
 
 const receivingFile = {
     meta: null,
-    chunks: []
+    chunks: [],
 };
 
 /*
  * 4. DOM Elements
  */
 const elements = {
-    get TabChat() { return document.getElementById("TabChat"); },
-    get TabStory() { return document.getElementById("TabStory"); },
-    get TabSetting() { return document.getElementById("TabSetting"); },
-    get chatsList() { return document.getElementById("chats-list"); },
-    get chatPanel() { return document.getElementById("chat-panel"); },
-    get noChatPlaceholder() { return document.getElementById("no-chat-placeholder"); },
-    get chatContent() { return document.getElementById("chat-content"); },
-    get chatName() { return document.getElementById("chat-name"); },
-    get chatAvatar() { return document.getElementById("chat-avatar"); },
-    get chatStatus() { return document.getElementById("chat-status"); },
-    get messagesContainer() { return document.getElementById("messages-container"); },
-    get messageInput() { return document.getElementById("message-input"); },
-    get sendMessageBtn() { return document.getElementById("send-message"); },
-    get backToChatBtn() { return document.getElementById("back-to-chats"); },
-    get searchInput() { return document.getElementById("searchId"); },
-    get toggleThemeBtn() { return document.getElementById("toggle-theme"); },
-    get storyInput() { return document.getElementById("storyInput"); },
-    get uploadAvatarInput() { return document.getElementById("uploadAvatarInput"); },
+    get TabChat() {
+        return document.getElementById("TabChat");
+    },
+    get TabStory() {
+        return document.getElementById("TabStory");
+    },
+    get TabSetting() {
+        return document.getElementById("TabSetting");
+    },
+    get chatsList() {
+        return document.getElementById("chats-list");
+    },
+    get chatPanel() {
+        return document.getElementById("chat-panel");
+    },
+    get noChatPlaceholder() {
+        return document.getElementById("no-chat-placeholder");
+    },
+    get chatContent() {
+        return document.getElementById("chat-content");
+    },
+    get chatName() {
+        return document.getElementById("chat-name");
+    },
+    get chatAvatar() {
+        return document.getElementById("chat-avatar");
+    },
+    get chatStatus() {
+        return document.getElementById("chat-status");
+    },
+    get messagesContainer() {
+        return document.getElementById("messages-container");
+    },
+    get messageInput() {
+        return document.getElementById("message-input");
+    },
+    get sendMessageBtn() {
+        return document.getElementById("send-message");
+    },
+    get backToChatBtn() {
+        return document.getElementById("back-to-chats");
+    },
+    get searchInput() {
+        return document.getElementById("searchId");
+    },
+    get toggleThemeBtn() {
+        return document.getElementById("toggle-theme");
+    },
+    get storyInput() {
+        return document.getElementById("storyInput");
+    },
+    get uploadAvatarInput() {
+        return document.getElementById("uploadAvatarInput");
+    },
 };
 
-
-let currentLang = localStorage.getItem(STORAGE_KEYS.LANG)|| "en";
+let currentLang = localStorage.getItem(STORAGE_KEYS.LANG) || "en";
 let translations = {};
 
 /*
@@ -131,7 +166,7 @@ function initFileUpload() {
                 name: file.name,
                 size: file.size,
                 mimeType: file.type,
-                data: base64Data
+                data: base64Data,
             };
 
             sendFileInChunks(fileMeta);
@@ -153,7 +188,7 @@ function sendFileInChunks(fileMeta) {
         type: "file-meta",
         name,
         mimeType,
-        totalChunks
+        totalChunks,
     };
 
     sendSafe(state.dataChannel, JSON.stringify(meta));
@@ -163,13 +198,11 @@ function sendFileInChunks(fileMeta) {
         const chunkMsg = {
             type: "file-chunk",
             index: i,
-            chunk
+            chunk,
         };
         sendSafe(state.dataChannel, JSON.stringify(chunkMsg));
     }
 }
-
-
 
 function setupEventListeners() {
     // Toggle theme
@@ -183,7 +216,7 @@ function setupEventListeners() {
     if (elements.sendMessageBtn) {
         elements.sendMessageBtn.addEventListener("click", sendMessage);
     }
-    
+
     if (elements.messageInput) {
         elements.messageInput.addEventListener("keydown", (e) => {
             if (e.key === "Enter" && !e.shiftKey) {
@@ -243,7 +276,6 @@ function initStoryFunctionality() {
     }
 }
 
-
 function initProfilePictureUpload() {
     if (elements.uploadAvatarInput) {
         elements.uploadAvatarInput.addEventListener("change", handleProfilePictureUpload);
@@ -253,15 +285,14 @@ function initProfilePictureUpload() {
 /*
  * 6. UI Render Functions
  */
-const renderNotEmpty = t("renderNotEmpty"); 
-
+const renderNotEmpty = t("renderNotEmpty");
 
 function getRandomMessage(key) {
-  const arr = translations[currentLang]?.[key];
-  if (Array.isArray(arr)) {
-    return arr[Math.floor(Math.random() * arr.length)];
-  }
-  return key; // eğer bulunmazsa anahtarı döndür
+    const arr = translations[currentLang]?.[key];
+    if (Array.isArray(arr)) {
+        return arr[Math.floor(Math.random() * arr.length)];
+    }
+    return key; // eğer bulunmazsa anahtarı döndür
 }
 
 function renderChatsList() {
@@ -371,7 +402,8 @@ function renderStoriesList() {
         const latestStory = userStories[userStories.length - 1];
 
         const storyCard = document.createElement("div");
-        storyCard.className = "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
+        storyCard.className =
+            "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
 
         storyCard.innerHTML = `
             <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-medium shrink-0">
@@ -412,7 +444,8 @@ function renderStorySearchResults(stories) {
         const latestStory = storyData.stories[storyData.stories.length - 1];
 
         const storyElement = document.createElement("div");
-        storyElement.className = "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
+        storyElement.className =
+            "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
 
         storyElement.innerHTML = `
             <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-medium shrink-0">
@@ -442,33 +475,34 @@ function renderSettingsList() {
             onClick: () => {
                 navigator.clipboard.writeText(state.myId);
                 showToast(t("copied_id"));
-            }
+            },
         },
         {
             icon: `<i class="fas fa-camera"></i>`,
             label: t("upload_photo"),
-            onClick: () => document.getElementById("uploadAvatarInput")?.click()
+            onClick: () => document.getElementById("uploadAvatarInput")?.click(),
         },
         {
             icon: `<i class="fas fa-user-secret"></i>`,
             label: state.hiddenFromSearch ? t("hidden_from_search") : t("visible_in_search"),
-            onClick: () => toggleSearchVisibility()
+            onClick: () => toggleSearchVisibility(),
         },
         {
             icon: `<i class="fas fa-globe"></i>`,
             label: t("select_language"),
-            onClick: () => changeLanguage()
+            onClick: () => changeLanguage(),
         },
         {
             icon: `<i class="fas fa-sign-out-alt"></i>`,
             label: t("log_out"),
-            onClick: () => logoutUser()
-        }
+            onClick: () => logoutUser(),
+        },
     ];
 
-    settings.forEach(setting => {
+    settings.forEach((setting) => {
         const item = document.createElement("div");
-        item.className = "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
+        item.className =
+            "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
 
         item.innerHTML = `
             <div class="w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center text-lg shrink-0">
@@ -495,9 +529,10 @@ function renderSettingsSearchResults(filteredSettings) {
         return;
     }
 
-    filteredSettings.forEach(setting => {
+    filteredSettings.forEach((setting) => {
         const item = document.createElement("div");
-        item.className = "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
+        item.className =
+            "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
 
         item.innerHTML = `
             <div class="w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center text-lg shrink-0">
@@ -514,51 +549,50 @@ function renderSettingsSearchResults(filteredSettings) {
 }
 
 function getFileIconClass(fileName = "", mimeType = "") {
-  const ext = fileName.split(".").pop().toLowerCase();
+    const ext = fileName.split(".").pop().toLowerCase();
 
-  const map = {
-    pdf: "fa-file-pdf",
-    doc: "fa-file-word",
-    docx: "fa-file-word",
-    xls: "fa-file-excel",
-    xlsx: "fa-file-excel",
-    csv: "fa-file-csv",
-    ppt: "fa-file-powerpoint",
-    pptx: "fa-file-powerpoint",
-    zip: "fa-file-zipper",
-    rar: "fa-file-zipper",
-    txt: "fa-file-lines",
-    js: "fa-file-code",
-    html: "fa-file-code",
-    css: "fa-file-code",
-    json: "fa-file-code",
-  };
+    const map = {
+        pdf: "fa-file-pdf",
+        doc: "fa-file-word",
+        docx: "fa-file-word",
+        xls: "fa-file-excel",
+        xlsx: "fa-file-excel",
+        csv: "fa-file-csv",
+        ppt: "fa-file-powerpoint",
+        pptx: "fa-file-powerpoint",
+        zip: "fa-file-zipper",
+        rar: "fa-file-zipper",
+        txt: "fa-file-lines",
+        js: "fa-file-code",
+        html: "fa-file-code",
+        css: "fa-file-code",
+        json: "fa-file-code",
+    };
 
-  return map[ext] || "fa-file"; // fallback
+    return map[ext] || "fa-file"; // fallback
 }
-
 
 // Escape special HTML characters to prevent XSS
 function escapeHtml(unsafe) {
-  return String(unsafe)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+    return String(unsafe)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 function renderFilePreview(fileMeta, from) {
-  const { name, mimeType, data } = fileMeta;
-  let content = "";
+    const { name, mimeType, data } = fileMeta;
+    let content = "";
 
-  if (mimeType.startsWith("image/")) {
-    content = `<img src="${data}" alt="${escapeHtml(name)}" class="max-w-[200px] rounded-lg" />`;
-  } else if (mimeType.startsWith("audio/")) {
-    content = `<audio controls src="${data}" class="mt-2"></audio>`;
-  } else {
-    const iconClass = getFileIconClass(name, mimeType);
-    content = `
+    if (mimeType.startsWith("image/")) {
+        content = `<img src="${data}" alt="${escapeHtml(name)}" class="max-w-[200px] rounded-lg" />`;
+    } else if (mimeType.startsWith("audio/")) {
+        content = `<audio controls src="${data}" class="mt-2"></audio>`;
+    } else {
+        const iconClass = getFileIconClass(name, mimeType);
+        content = `
       <div class="flex items-center space-x-4 bg-gray-100 dark:bg-gray-800 p-3 rounded shadow-md max-w-md">
         <div class="flex-shrink-0">
           <i class="fas ${iconClass} text-3xl text-gray-600 dark:text-gray-300"></i>
@@ -569,11 +603,10 @@ function renderFilePreview(fileMeta, from) {
         </div>
       </div>
     `;
-  }
+    }
 
-  logMessage(content, from);
+    logMessage(content, from);
 }
-
 
 function sendSafe(channel, data) {
     try {
@@ -595,7 +628,7 @@ let activeTabId = "btnChats";
 const sidebarButtons = [
     { id: "btnChats", action: renderChats },
     { id: "btnStorys", action: renderStorys },
-    { id: "btnSettings", action: renderSettings }
+    { id: "btnSettings", action: renderSettings },
 ];
 
 function activateButton(buttonList, activeId) {
@@ -623,7 +656,7 @@ sidebarButtons.forEach(({ id, action }) => {
 const mobileButtons = [
     { id: "mobBtnChats", action: renderChats },
     { id: "mobBtnStorys", action: renderStorys },
-    { id: "mobBtnSettings", action: renderSettings }
+    { id: "mobBtnSettings", action: renderSettings },
 ];
 
 mobileButtons.forEach(({ id, action }) => {
@@ -634,7 +667,6 @@ mobileButtons.forEach(({ id, action }) => {
         action();
     });
 });
-
 
 /*
  * 8. Media Upload Handlers
@@ -689,7 +721,6 @@ function handleStoryUpload() {
     reader.readAsDataURL(file);
 }
 
-
 /*
  * 9. View Logic
  */
@@ -713,7 +744,6 @@ function showOnlyTab(tab) {
     tab.classList.remove("hidden");
 }
 
-
 /*
  * 10. Messaging
  */
@@ -728,10 +758,12 @@ function sendMessage() {
     }
 
     try {
-        state.dataChannel.send(JSON.stringify({
-            type: "text",
-            message: text,
-        }));
+        state.dataChannel.send(
+            JSON.stringify({
+                type: "text",
+                message: text,
+            })
+        );
 
         logMessage(text, "me");
         elements.messageInput.value = "";
@@ -754,10 +786,8 @@ function handleData(data) {
         } else if (msg.type === "file-chunk") {
             receivingFile.chunks[msg.index] = msg.chunk;
 
-            const allReceived = (
-                receivingFile.chunks.length === receivingFile.meta.totalChunks &&
-                receivingFile.chunks.every(Boolean)
-            );
+            const allReceived =
+                receivingFile.chunks.length === receivingFile.meta.totalChunks && receivingFile.chunks.every(Boolean);
 
             if (allReceived) {
                 const base64 = receivingFile.chunks.join("");
@@ -765,7 +795,7 @@ function handleData(data) {
                     type: "file",
                     name: receivingFile.meta.name,
                     mimeType: receivingFile.meta.mimeType,
-                    data: base64
+                    data: base64,
                 };
 
                 renderFilePreview(fileMeta, "them");
@@ -806,11 +836,12 @@ function handleData(data) {
                 elements.chatStatus.style.color = "";
             }
         }
-
     } catch (e) {
         console.error("Error parsing message:", e);
     }
 }
+
+const formatTime = (date) => date.toLocaleTimeString()
 
 function logMessage(text, from) {
     if (!elements.messagesContainer) return;
@@ -825,17 +856,29 @@ function logMessage(text, from) {
             : "bg-messageBg-light dark:bg-messageBg-dark rounded-bl-none"
     }`;
 
-    // Process URLs safely
+    // Process URLs safely with protocol validation
     const parts = text.split(/(https?:\/\/[^\s]+)/g);
-    parts.forEach(part => {
+    parts.forEach((part) => {
         if (part.match(/https?:\/\/[^\s]+/)) {
-            const a = document.createElement("a");
-            a.href = part;
-            a.target = "_blank";
-            a.rel = "noopener noreferrer";
-            a.style.textDecoration = "underline";
-            a.textContent = part;
-            msgDiv.appendChild(a);
+            try {
+                // Validate URL and ensure it uses http or https protocol
+                const url = new URL(part);
+                if (url.protocol === "http:" || url.protocol === "https:") {
+                    const a = document.createElement("a");
+                    a.href = url.href; // Use the validated URL
+                    a.target = "_blank";
+                    a.rel = "noopener noreferrer";
+                    a.style.textDecoration = "underline";
+                    a.textContent = part;
+                    msgDiv.appendChild(a);
+                } else {
+                    // If protocol is not safe, render as plain text
+                    msgDiv.appendChild(document.createTextNode(part));
+                }
+            } catch (e) {
+                // If URL parsing fails, render as plain text
+                msgDiv.appendChild(document.createTextNode(part));
+            }
         } else {
             msgDiv.appendChild(document.createTextNode(part));
         }
@@ -870,17 +913,12 @@ function showSystemMessage(message) {
     elements.messagesContainer.scrollTop = elements.messagesContainer.scrollHeight;
 }
 
-
-
 /*
  * 11. WebRTC Functions
  */
 function createPeer() {
     const config = {
-        iceServers: [
-            { urls: "stun:stun.l.google.com:19302" },
-            { urls: "stun:stun1.l.google.com:19302" }
-        ],
+        iceServers: [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun1.l.google.com:19302" }],
     };
 
     const peer = new RTCPeerConnection(config);
@@ -935,7 +973,9 @@ async function startCall(id) {
     }
 
     if (state.connectionStatus) {
-        const confirmReconnect = confirm("Zaten bir sohbete bağlısınız. Önceki sohbeti kapatıp yeni bir bağlantı kurmak istiyor musunuz?");
+        const confirmReconnect = confirm(
+            "Zaten bir sohbete bağlısınız. Önceki sohbeti kapatıp yeni bir bağlantı kurmak istiyor musunuz?"
+        );
         if (!confirmReconnect) return;
         handlePeerDisconnect();
     }
@@ -968,13 +1008,11 @@ async function startCall(id) {
         } else {
             console.warn("PeerConnection stable değil, offer oluşturulmadı.");
         }
-
     } catch (error) {
         console.error("Teklif oluşturulurken hata:", error);
         handlePeerDisconnect();
     }
 }
-
 
 function handlePeerDisconnect() {
     if (!state.connectionStatus) return;
@@ -985,7 +1023,7 @@ function handlePeerDisconnect() {
 
     // Clean up resources
     closeChat();
-    
+
     // Clean up listeners
     if (state.dataChannel) {
         state.dataChannel.onopen = null;
@@ -1043,7 +1081,7 @@ function openStory(user) {
     closeChat();
 
     const storyData = state.currentStories[user.persistentUserId];
-    const stories = storyData?.stories?.filter(s => s.type === "image") || [];
+    const stories = storyData?.stories?.filter((s) => s.type === "image") || [];
 
     if (!stories.length) {
         return;
@@ -1089,10 +1127,10 @@ function openStory(user) {
         const story = stories[index];
         img.src = story.content;
 
-         socket.emit("story-viewed", {
+        socket.emit("story-viewed", {
             persistentUserId: user.persistentUserId,
-            storyId: story.id,                 
-            viewerId: state.myPersistentId 
+            storyId: story.id,
+            viewerId: state.myPersistentId,
         });
 
         viewersCountDiv.innerHTML = `<i class="fas fa-eye"></i>  ${story.viewersCount || 0}`;
@@ -1111,8 +1149,8 @@ function openStory(user) {
         }
 
         img.draggable = false;
-        img.addEventListener("touchstart", e => e.preventDefault());
-        img.addEventListener("mousedown", e => e.preventDefault());
+        img.addEventListener("touchstart", (e) => e.preventDefault());
+        img.addEventListener("mousedown", (e) => e.preventDefault());
         img.classList.remove("hidden");
 
         const fill = document.getElementById(`progress-fill-${index}`);
@@ -1128,13 +1166,12 @@ function openStory(user) {
             index++;
             showNextStory();
         }, STORY_DURATION.IMAGE);
-
     }
 
     showNextStory();
 }
 
-function closeStory() { 
+function closeStory() {
     const chatPanel = document.getElementById("chat-panel");
     const panel = document.getElementById("story-panel");
     const img = document.getElementById("story-image");
@@ -1160,8 +1197,6 @@ function closeStory() {
     elements.noChatPlaceholder?.classList.remove("hidden");
 }
 
-
-
 /*
  * 14. User Chat Screen
  */
@@ -1184,11 +1219,11 @@ function prepareChatUI() {
         elements.messagesContainer.innerHTML = "";
     }
 
-    setTimeout(elements.messageInput?.focus(), 0)
+    setTimeout(elements.messageInput?.focus(), 0);
 }
 
 function openChat(user) {
-    closeStory(); 
+    closeStory();
     state.activeChat = user;
     state.selectedUser = user;
     state.currentView = "chat";
@@ -1257,12 +1292,11 @@ function toggleFloatingMenu() {
         leaveBtn.onclick = () => {
             handlePeerDisconnect();
             menu.classList.add("hidden");
-        }
+        };
     }
 
     menu.classList.remove("hidden");
 }
-
 
 /*
  * 15. Utilities
@@ -1277,26 +1311,26 @@ function updateStatus(text) {
 }
 
 function formatTime(date) {
-    return date.toLocaleString("en-US", { 
-        hour: "numeric", 
-        minute: "numeric", 
-        hour12: false
+    return date.toLocaleString("en-US", {
+        hour: "numeric",
+        minute: "numeric",
+        hour12: false,
     });
 }
 
 function timeAgo(timestamp) {
-  const now = Date.now();
-  const diff = now - timestamp;
+    const now = Date.now();
+    const diff = now - timestamp;
 
-  const seconds = Math.floor(diff / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours   = Math.floor(minutes / 60);
-  const days    = Math.floor(hours / 24);
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
 
-  if (seconds < 60) return `${seconds} saniye önce paylaşıldı`;
-  if (minutes < 60) return `${minutes} dakika önce paylaşıldı`;
-  if (hours   < 24) return `${hours} saat önce paylaşıldı`;
-  return `${days} gün önce paylaşıldı`;
+    if (seconds < 60) return `${seconds} saniye önce paylaşıldı`;
+    if (minutes < 60) return `${minutes} dakika önce paylaşıldı`;
+    if (hours < 24) return `${hours} saat önce paylaşıldı`;
+    return `${days} gün önce paylaşıldı`;
 }
 
 function playNotificationSound() {
@@ -1325,63 +1359,56 @@ function searchInCurrentTab(query) {
             onClick: () => {
                 navigator.clipboard.writeText(state.myId);
                 showToast(t("copied_id"));
-            }
+            },
         },
         {
             icon: `<i class="fas fa-camera"></i>`,
             label: t("upload_photo"),
-            onClick: () => document.getElementById("uploadAvatarInput")?.click()
+            onClick: () => document.getElementById("uploadAvatarInput")?.click(),
         },
         {
             icon: `<i class="fas fa-user-secret"></i>`,
             label: state.hiddenFromSearch ? t("hidden_from_search") : t("visible_in_search"),
-            onClick: () => toggleSearchVisibility()
+            onClick: () => toggleSearchVisibility(),
         },
         {
             icon: `<i class="fas fa-globe"></i>`,
             label: t("select_language"),
-            onClick: () => changeLanguage()
+            onClick: () => changeLanguage(),
         },
         {
             icon: `<i class="fas fa-sign-out-alt"></i>`,
             label: t("log_out"),
-            onClick: () => logoutUser()
-        }
+            onClick: () => logoutUser(),
+        },
     ];
 
     // 🟡 CHAT
     if (activeTabId === "btnChats" || activeTabId === "mobBtnChats") {
-        const matchedUsers = state.allUsers.filter(user =>
-            user.id !== state.myId &&
-            !user.hidden &&
-            user.username.toLowerCase().includes(q)
+        const matchedUsers = state.allUsers.filter(
+            (user) => user.id !== state.myId && !user.hidden && user.username.toLowerCase().includes(q)
         );
         renderChatSearchResults(matchedUsers);
     }
 
     // 🟣 STORY
     else if (activeTabId === "btnStorys" || activeTabId === "mobBtnStorys") {
-        const matchedStories = Object.values(state.currentStories).filter(story =>
+        const matchedStories = Object.values(state.currentStories).filter((story) =>
             story?.user?.username.toLowerCase().includes(q)
         );
         renderStorySearchResults(matchedStories);
     }
 
     // ⚙️ SETTINGS
-
-    
     else if (activeTabId === "btnSettings" || activeTabId === "mobBtnSettings") {
-        const filteredSettings = settings.filter(setting =>
+        const filteredSettings = settings.filter((setting) =>
             setting.label.toLowerCase().includes(query.toLowerCase())
         );
         renderSettingsSearchResults(filteredSettings);
-    }
-
-    else {
+    } else {
         console.warn("Unknown tab for search:", activeTabId);
     }
 }
-
 
 function showToast(message) {
     // Remove existing toast
@@ -1389,7 +1416,8 @@ function showToast(message) {
     existingToast?.remove();
 
     const toast = document.createElement("div");
-    toast.className = "toast fixed top-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300";
+    toast.className =
+        "toast fixed top-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300";
     toast.textContent = message;
     document.body.appendChild(toast);
 
@@ -1451,10 +1479,13 @@ socket.on("incoming-call", async ({ from, offer }) => {
     state.remoteId = from;
 
     if (state.connectionStatus) {
-        if (state.peer && state.peer.localDescription?.type === 'offer') {
+        if (state.peer && state.peer.localDescription?.type === "offer") {
             if (state.myId < from) {
                 console.warn("Eşzamanlı teklif alındı, ancak benim ID'm daha küçük. Gelen çağrı yok sayılıyor.");
-                socket.emit("call-rejected", { targetId: from, reason: "Simultaneous offer (tie-break - myId smaller)" });
+                socket.emit("call-rejected", {
+                    targetId: from,
+                    reason: "Simultaneous offer (tie-break - myId smaller)",
+                });
                 return;
             } else {
                 // Karşı tarafın ID'si daha küçükse, ben onların teklifini kabul ederim.
@@ -1506,7 +1537,7 @@ socket.on("call-answered", async ({ answer }) => {
     try {
         await state.peer.setRemoteDescription(new RTCSessionDescription(answer));
         state.connectionStatus = true;
-        showToast(t("call_answered"))
+        showToast(t("call_answered"));
     } catch (error) {
         console.error("Error handling call answer:", error);
         handlePeerDisconnect();
@@ -1537,7 +1568,6 @@ socket.on("ice-candidate", async ({ candidate }) => {
     }
 });
 
-
 /*
  * 17. Settings Functions
  */
@@ -1552,7 +1582,7 @@ function toggleSearchVisibility() {
     state.hiddenFromSearch = !state.hiddenFromSearch;
     localStorage.setItem(STORAGE_KEYS.HIDDEN, state.hiddenFromSearch);
 
-    if (state.hiddenFromSearch) { 
+    if (state.hiddenFromSearch) {
         showToast(t("hidden_from_search"));
     } else {
         showToast(t("visible_in_search"));
@@ -1572,43 +1602,36 @@ function changeLanguage() {
             icon: `<img src="https://img.icons8.com/?size=96&id=pHfpq4E7vg9Y&format=png"></img>`,
             label: "Azərbaycan dili",
             onClick: () => {
-                localStorage.setItem(STORAGE_KEYS.LANG, "az"),
-                currentLang = "az",
-                translatePage()
-            }
+                localStorage.setItem(STORAGE_KEYS.LANG, "az"), (currentLang = "az"), translatePage();
+            },
         },
         {
             icon: `<img src="https://img.icons8.com/?size=64&id=J6RJcdGoJomQ&format=png"></img>`,
             label: "Türkçe",
             onClick: () => {
-                localStorage.setItem(STORAGE_KEYS.LANG, "tr"),
-                currentLang = "tr",
-                translatePage()
-            }
+                localStorage.setItem(STORAGE_KEYS.LANG, "tr"), (currentLang = "tr"), translatePage();
+            },
         },
         {
             icon: `<img src="https://img.icons8.com/?size=96&id=fIgZUHgwc76e&format=png"></img>`,
             label: "English",
             onClick: () => {
-                localStorage.setItem(STORAGE_KEYS.LANG, "en"),
-                currentLang = "en",
-                translatePage()
-            }
+                localStorage.setItem(STORAGE_KEYS.LANG, "en"), (currentLang = "en"), translatePage();
+            },
         },
         {
             icon: `<img src="https://img.icons8.com/?size=96&id=vioRCshpCBKv&format=png"></img>`,
             label: "Русский",
             onClick: () => {
-                localStorage.setItem(STORAGE_KEYS.LANG, "ru"),
-                currentLang = "ru",
-                translatePage()
-            }
-        }
+                localStorage.setItem(STORAGE_KEYS.LANG, "ru"), (currentLang = "ru"), translatePage();
+            },
+        },
     ];
 
-    settings.forEach(setting => {
+    settings.forEach((setting) => {
         const item = document.createElement("div");
-        item.className = "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
+        item.className =
+            "flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer chat-item";
 
         item.innerHTML = `
             <div class="w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center text-lg shrink-0">
@@ -1649,25 +1672,25 @@ window.sendMessage = sendMessage;
  * 19. translations
  */
 
-fetch('assets/translations.json')
-  .then(res => res.json())
-  .then(data => {
-    translations = data;
-    translatePage();
-  });
+fetch("assets/translations.json")
+    .then((res) => res.json())
+    .then((data) => {
+        translations = data;
+        translatePage();
+    });
 
 function t(key) {
-  return translations[currentLang]?.[key] || key;
+    return translations[currentLang]?.[key] || key;
 }
 
 function translatePage() {
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    el.textContent = t(key);
-  });
+    document.querySelectorAll("[data-i18n]").forEach((el) => {
+        const key = el.getAttribute("data-i18n");
+        el.textContent = t(key);
+    });
 
-  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-    const key = el.getAttribute('data-i18n-placeholder');
-    el.setAttribute('placeholder', t(key));
-  });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+        const key = el.getAttribute("data-i18n-placeholder");
+        el.setAttribute("placeholder", t(key));
+    });
 }
