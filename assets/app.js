@@ -1310,14 +1310,6 @@ function updateStatus(text) {
     }
 }
 
-function formatTime(date) {
-    return date.toLocaleString("en-US", {
-        hour: "numeric",
-        minute: "numeric",
-        hour12: false,
-    });
-}
-
 function timeAgo(timestamp) {
     const now = Date.now();
     const diff = now - timestamp;
