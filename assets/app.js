@@ -841,13 +841,24 @@ function handleData(data) {
     }
 }
 
-const formatTime = (date) => date.toLocaleTimeString()
+function formatTime(date) {
+    return date.toLocaleString("en-US", {
+        hour: "numeric",
+        minute: "numeric",
+        hour12: false,
+    });
+}
 
 function logMessage(text, from) {
     if (!elements.messagesContainer) return;
 
+    // DIŞ WRAPPER (flex değil)
     const wrapper = document.createElement("div");
-    wrapper.className = `flex ${from === "me" ? "justify-end" : "justify-start"} mb-4`;
+    wrapper.className = "mb-4";
+
+    // ÜST SATIR (mesaj balonu için)
+    const row = document.createElement("div");
+    row.className = `flex ${from === "me" ? "justify-end" : "justify-start"}`;
 
     const msgDiv = document.createElement("div");
     msgDiv.className = `max-w-[80%] px-3 py-2 rounded-lg ${
@@ -856,44 +867,49 @@ function logMessage(text, from) {
             : "bg-messageBg-light dark:bg-messageBg-dark rounded-bl-none"
     }`;
 
-    // Process URLs safely with protocol validation
-    const parts = text.split(/(https?:\/\/[^\s]+)/g);
-    parts.forEach((part) => {
-        if (part.match(/https?:\/\/[^\s]+/)) {
-            try {
-                // Validate URL and ensure it uses http or https protocol
-                const url = new URL(part);
-                if (url.protocol === "http:" || url.protocol === "https:") {
+    // HTML içerik kontrolü (image/audio/video)
+    const isHtml =
+        text.includes("<img") ||
+        text.includes("<audio") ||
+        text.includes("<video") ||
+        text.includes("<div");
+
+    if (isHtml) {
+        msgDiv.innerHTML = text;
+    } else {
+        const parts = text.split(/(https?:\/\/[^\s]+)/g);
+        parts.forEach((part) => {
+            if (part.match(/https?:\/\/[^\s]+/)) {
+                try {
+                    const url = new URL(part);
                     const a = document.createElement("a");
-                    a.href = url.href; // Use the validated URL
+                    a.href = url.href;
                     a.target = "_blank";
                     a.rel = "noopener noreferrer";
                     a.style.textDecoration = "underline";
                     a.textContent = part;
                     msgDiv.appendChild(a);
-                } else {
-                    // If protocol is not safe, render as plain text
+                } catch {
                     msgDiv.appendChild(document.createTextNode(part));
                 }
-            } catch (e) {
-                // If URL parsing fails, render as plain text
+            } else {
                 msgDiv.appendChild(document.createTextNode(part));
             }
-        } else {
-            msgDiv.appendChild(document.createTextNode(part));
-        }
-    });
+        });
+    }
 
+    row.appendChild(msgDiv);
+
+    // ALT SATIR (saat için)
     const timeDiv = document.createElement("div");
-    timeDiv.className = `text-xs text-gray-500 dark:text-gray-400 text-${from === "me" ? "right" : "left"} mt-1`;
+    timeDiv.className = `text-xs text-gray-500 dark:text-gray-400 ${
+        from === "me" ? "text-right" : "text-left"
+    } mt-1`;
     timeDiv.textContent = formatTime(new Date());
 
-    const textContainer = document.createElement("div");
-    textContainer.className = "text-sm";
-    textContainer.appendChild(msgDiv.cloneNode(true));
-
-    wrapper.appendChild(msgDiv);
+    wrapper.appendChild(row);
     wrapper.appendChild(timeDiv);
+
     elements.messagesContainer.appendChild(wrapper);
     elements.messagesContainer.scrollTop = elements.messagesContainer.scrollHeight;
 }
