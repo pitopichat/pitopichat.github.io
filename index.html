@@ -1,194 +1,308 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Real-Time and Secure Peer to Peer Chat" />
-    <meta property="og:title" content="Pitopi" />
-    <meta property="og:description" content="Real-Time and Secure Peer to Peer Chat" />
-    <meta property="og:url" content="https://aardaakpinar.github.io/" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://aardaakpinar.github.io/assets/images/logos/pitopi.png" />
-    <title>Pitopi</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="assets/style.css">
-    <link rel="icon" href="https://aardaakpinar.github.io/assets/images/logos/pitopi.png" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="assets/tailwind.config.js"></script>
-    <link rel="manifest" href="manifest.json">
-</head>
-<body class="bg-light dark:bg-dark text-gray-900 dark:text-gray-100 h-dvh">
-    <div class="flex h-screen overflow-hidden">
-        <!-- Left Sidebar - Menu -->
-        <aside class="w-20 flex-shrink-0 border-r border-gray-200 dark:border-gray-800 flex flex-col items-center py-4 hidden md:flex">
-            <div class="mb-6">
-                <button class="w-12 h-12 rounded-full text-white flex items-center justify-center">
-                    <img src="https://aardaakpinar.github.io/assets/images/logos/pitopi.png" alt="Pitopi" class="w-full h-full">
-                </button>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="description" content="Real-Time and Secure Peer to Peer Chat" />
+        <meta property="og:title" content="Pitopi" />
+        <meta property="og:description" content="Real-Time and Secure Peer to Peer Chat" />
+        <meta property="og:url" content="https://aardaakpinar.github.io/" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://aardaakpinar.github.io/assets/images/logos/pitopi.png" />
+        <title>Pitopi</title>
+        <link rel="icon" href="https://aardaakpinar.github.io/assets/images/logos/pitopi.png" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <link rel="stylesheet" href="assets/style.css" />
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="assets/tailwind.config.js"></script>
+    </head>
+    <body>
+        <div class="cursor" id="cursor"></div>
+        <div class="cursor-ring" id="cursorRing"></div>
+
+        <nav>
+            <a href="index.html" class="nav-logo">
+                <img src="https://aardaakpinar.github.io/assets/images/logos/pitopi.png" alt="Pitopi" />
+                Pitopi
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="help.html">Help</a></li>
+                <li><a href="donate.html">Donate</a></li>
+                <li><a href="https://pitopi.onrender.com/" class="nav-cta">Launch App →</a></li>
+            </ul>
+        </nav>
+
+        <!-- HERO -->
+        <section class="hero">
+            <div class="hero-grid"></div>
+            <div class="hero-glow"></div>
+            <div class="hero-glow2"></div>
+
+            <div class="hero-badge">
+                <span></span>
+                Open source · End-to-end encrypted
             </div>
-            <nav class="flex flex-col items-center space-y-5 flex-1">
-                <button id="btnChats" class="w-12 h-12 rounded-full flex items-center justify-center text-accent hover:bg-gray-200 dark:hover:bg-gray-800">
-                    <i class="fas fa-comment-alt text-xl"></i>
-                </button>
-                <button id="btnStorys" class="w-12 h-12 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-800">
-                    <i class="fas fa-circle-notch text-xl"></i>
-                </button>
-            </nav>
-            <div>
-                <button id="btnSettings" class="w-12 h-12 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-800">
-                    <img src="assets/boringavatar.svg" class="w-10 h-10 rounded-full"></img>
-                </button>
+
+            <h1>
+                <span class="line1">Privacy is not</span>
+                <span class="line2">a feature.</span>
+            </h1>
+
+            <p>
+                Pitopi enables real-time, peer-to-peer communication with no servers in between. Your messages never
+                touch our infrastructure.
+            </p>
+
+            <div class="hero-actions">
+                <a href="https://pitopi.onrender.com/" class="btn-primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                    Get Started Free
+                </a>
+                <a href="https://github.com/pitopichat/pitopi" class="btn-secondary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="16 18 22 12 16 6" />
+                        <polyline points="8 6 2 12 8 18" />
+                    </svg>
+                    View Source
+                </a>
             </div>
-        </aside>
-        
-        <!-- Center Panel - Chats List -->
-        <div id="chats-panel" class="w-full md:w-80 lg:w-96 flex-shrink-0 border-r border-gray-200 dark:border-gray-800 flex flex-col">
-            <!-- Search Bar -->
-            <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex">
-                <div class="search-wrapper items-center relative flex flex-1 w-full flex-nowrap flex-row">
-                    <img class="md:hidden w-10 h-10 rounded-full text-white flex items-center justify-center" src="https://aardaakpinar.github.io/assets/images/logos/pitopi.png" alt="Pitopi">
-                    <div class="relative w-full p-2">
-                        <input id="searchId" type="text" placeholder="Search..." data-i18n-placeholder="search_placeholder" class="w-full pl-4 pr-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-base">
-                        <div class="absolute right-4 top-4 text-gray-400">
-                            <i class="fas fa-search"></i>
+
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value">P2P</div>
+                    <div class="stat-label">Architecture</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Logs Stored</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">E2E</div>
+                    <div class="stat-label">Encrypted</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FEATURES -->
+        <section
+            style="
+                padding: 120px 0;
+                background: var(--surface);
+                border-top: 1px solid var(--border);
+                border-bottom: 1px solid var(--border);
+            "
+        >
+            <div class="section" style="padding-top: 0; padding-bottom: 0">
+                <div class="reveal">
+                    <div class="section-tag">// Why Pitopi</div>
+                    <h2 class="section-title">Built different.<br />By design.</h2>
+                    <p class="section-sub">
+                        Every decision we made was driven by one question: how do we get out of the way?
+                    </p>
+                </div>
+
+                <div class="features-grid reveal">
+                    <div class="feature-card">
+                        <div class="feature-icon">🔒</div>
+                        <div class="feature-title">Zero-Knowledge</div>
+                        <div class="feature-desc">
+                            We have no idea what you're talking about. Literally. Messages are encrypted before they
+                            leave your device.
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <div class="feature-title">Real-Time P2P</div>
+                        <div class="feature-desc">
+                            WebRTC creates a direct tunnel between you and your contact. No relay servers, no latency
+                            overhead.
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🗝️</div>
+                        <div class="feature-title">Key-Based Auth</div>
+                        <div class="feature-desc">
+                            No passwords, no emails, no phone numbers. A cryptographic key file is your identity — lose
+                            it and we can't help you recover it.
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📡</div>
+                        <div class="feature-title">Story Sharing</div>
+                        <div class="feature-desc">
+                            Share moments that disappear in 12 hours. Viewable by anyone on the network, stored nowhere
+                            permanently.
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🚫</div>
+                        <div class="feature-title">No Ads. Ever.</div>
+                        <div class="feature-desc">
+                            Your attention is not our product. Pitopi is free because we believe privacy should be
+                            accessible, not monetized.
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🌐</div>
+                        <div class="feature-title">Open Source</div>
+                        <div class="feature-desc">
+                            Every line of code is public. Audit it, fork it, improve it. Trust through transparency, not
+                            promises.
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Chat Tabs -->
-             <div id="TabChat" class="flex border-b border-gray-200 dark:border-gray-800">
-                <p data-i18n="chats_tab_label" class="flex-1 py-3 p-5 font-medium">
-                    Chats
-                </p>
-            </div>
+        </section>
 
-            <!-- Story Tabs -->
-            <div id="TabStory" class="hidden flex border-b border-gray-200 dark:border-gray-800">
-                <p data-i18n="storys_tab_label" class="flex-1 py-3 p-5 font-medium">
-                    Storys
-                </p>
-                <button onclick="elements.storyInput.click()" class="flex-1 max-w-20 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-800">
-                    <i class="fas fa-circle-plus"></i>
-                </button>
-            </div>
+        <!-- HOW IT WORKS -->
+        <section class="how-section">
+            <div class="how-inner">
+                <div>
+                    <div class="section-tag reveal">// How it works</div>
+                    <h2 class="section-title reveal">Three steps.<br />That's it.</h2>
 
-            <!-- Settings Tabs -->
-             <div id="TabSetting" class="hidden border-b border-gray-200 dark:border-gray-800">
-                <p data-i18n="settings_tab_label" class="flex-1 py-3 p-5 font-medium">
-                    Settings
-                </p>
-            </div>
-            
-            <!-- Chats List -->
-            <div id="chats-list" class="flex-1 overflow-y-auto">
-                <div class="text-center text-gray-500 py-10" data-i18n="connecting"></div>
-            </div>
-            
-            <!-- Mobile Bottom Menu -->
-            <div class="md:hidden flex border-t border-gray-200 dark:border-gray-800">
-                <button id="mobBtnChats" class="flex-1 py-3 text-accent hover:bg-gray-200 dark:hover:bg-gray-800">
-                    <i class="fas fa-comment-alt"></i>
-                </button>
-                <button id="mobBtnStorys"  class="flex-1 py-3 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-800">
-                    <i class="fas fa-circle-notch"></i>
-                </button>
-                <button id="mobBtnSettings" class="flex-1 py-3 flex items-center justify-center text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-800">
-                    <img src="assets/boringavatar.svg" class="w-8 h-8 rounded-full"></img>
-                </button>
-            </div>
-        </div>
-        
-        <!-- Right Panel - Chat Content -->
-        <div id="chat-panel" class="hidden md:flex flex-col flex-1 md:relative fixed inset-0 mobile-chat-closed md:transform-none transition-transform duration-300 ease-in-out bg-secondaryLight dark:bg-secondaryDark">
-            <!-- No chat selected placeholder (initially visible) -->
-            <div id="no-chat-placeholder" class="flex flex-col items-center justify-center h-full">
-                <div class="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center mb-4">
-                    <i class="fas fa-comment-alt text-gray-400 text-2xl"></i>
-                </div>
-                <h3 data-i18n="select_chat_title" class="text-xl font-medium mb-2">Select a chat to start messaging</h3>
-                <p data-i18n="select_chat_description" class="text-gray-500 dark:text-gray-400 text-center max-w-md px-4">
-                    Choose from online users to begin a secure peer-to-peer conversation
-                </p>
-            </div>
-            
-            <!-- Story content (initially hidden) -->
-            <div id="story-panel" class="hidden flex-col h-full inset-0 flex flex-col items-center justify-center text-white">
-                <div class="absolute backdrop-blur-[5px] top-0 left-0 w-full px-4 py-3 flex items-center justify-between bg-light dark:bg-dark bg-opacity-50 z-40">
-                    <div class="flex items-center gap-2">
-                        <img id="story-avatar" class="w-10 h-10 rounded-full object-cover" />
-                        <span id="story-username" class="text-dark dark:text-light text-lg"></span>
-                    </div>
-                    <div class="flex gap-2 items-center">
-                        <div id="story-viewersCount"></div>
-                        <button id="delete-story-btn" class="hidden text-xl px-2 hover:text-red-400">
-                            <i class="fas fa-trash-can text-dark dark:text-light"></i>
-                        </button>
-                    </div>
-                </div>
-                <div id="story-progress-container" class="absolute top-16 left-0 w-full h-1 flex gap-1 z-40"></div>
-                <img id="story-image" class="max-w-full max-h-full object-contain z-30" />
-            </div>
-
-            <!-- Chat content (initially hidden) -->
-            <div id="chat-content" class="hidden flex-col h-full">
-                <!-- Chat Header -->
-                <div class="flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-light dark:bg-dark">
-                    <button id="back-to-chats" class="mr-3 md:hidden">
-                        <i class="fas fa-arrow-left"></i>
-                    </button>
-                    <div id="chat-avatar" class="w-10 h-10 rounded-full flex items-center justify-center text-white">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="ml-3 flex-1">
-                        <div id="chat-name" class="font-medium">User</div>
-                        <div id="chat-status" class="text-sm text-gray-500 dark:text-gray-400">connecting...</div>
-                    </div>
-                    <div class="flex space-x-3">
-                        <button onclick="toggleFloatingMenu()" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800">
-                            <i class="fas fa-ellipsis-v"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Chat Messages -->
-                <div id="messages-container" class="flex-1 overflow-y-auto p-4 bg-secondaryLight dark:bg-secondaryDark"></div>
-                
-                <!-- Message Input -->
-                <div class="p-3 ">
-                    <div class="flex items-center">
-                        <div class="flex-1 bg-white dark:bg-dark rounded-full px-4 py-2 flex items-center shadow-sm">
-                            <input id="message-input" type="text" placeholder="Type a message..." data-i18n-placeholder="message_input_placeholder" class="flex-1 bg-transparent border-none focus:outline-none text-base">
-                            <label for="fileInput" class="p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 ml-1">
-                                <i class="fas fa-paperclip"></i>
-                            </label>
+                    <div class="steps">
+                        <div class="step reveal">
+                            <div class="step-num">01</div>
+                            <div class="step-content">
+                                <h4>Download your key</h4>
+                                <p>
+                                    Generate a unique cryptographic key file. This 96-byte file is your entire identity.
+                                    No sign-up form needed.
+                                </p>
+                            </div>
                         </div>
-                        <button id="send-message" class="p-2 ml-2 w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center disabled:opacity-50" disabled>
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
+                        <div class="step reveal">
+                            <div class="step-num">02</div>
+                            <div class="step-content">
+                                <h4>Connect to the network</h4>
+                                <p>
+                                    Upload your key to sign in. You appear in the user list and can see who else is
+                                    online right now.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="step reveal">
+                            <div class="step-num">03</div>
+                            <div class="step-content">
+                                <h4>Start a private session</h4>
+                                <p>
+                                    Click a user, accept the WebRTC handshake, and your encrypted tunnel is live.
+                                    Direct. Serverless. Instant.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="terminal reveal">
+                    <div class="terminal-bar">
+                        <div class="dot dot-r"></div>
+                        <div class="dot dot-y"></div>
+                        <div class="dot dot-g"></div>
+                        <div class="terminal-title">pitopi</div>
+                    </div>
+                    <img class="terminal-body" src="assets/ss.png"></img>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECURITY -->
+        <section class="security-section">
+            <div class="reveal">
+                <div class="section-tag">// Security model</div>
+                <h2 class="section-title">Designed to be<br />uncompromising.</h2>
+            </div>
+
+            <div class="security-grid">
+                <div class="security-card reveal">
+                    <div class="security-icon">🛡️</div>
+                    <h3>Brute-Force Protection</h3>
+                    <p>
+                        Rate limiting and IP banning prevent automated attacks. After 5 failed attempts, access is
+                        suspended for 15 minutes.
+                    </p>
+                    <div class="security-badge">● Active</div>
+                </div>
+                <div class="security-card reveal">
+                    <div class="security-icon">📁</div>
+                    <h3>Exact-Byte Validation</h3>
+                    <p>
+                        Key files must be precisely 96 bytes. Anything else is rejected before parsing — no attack
+                        surface for malformed payloads.
+                    </p>
+                    <div class="security-badge">● Active</div>
+                </div>
+                <div class="security-card wide reveal">
+                    <div>
+                        <div class="security-icon">🔐</div>
+                        <h3>No Stored Messages</h3>
+                        <p>
+                            Pitopi's server facilitates the WebRTC handshake only. Once connected, all data flows
+                            directly between peers. We couldn't read your messages even if we wanted to.
+                        </p>
+                        <div class="security-badge">● Verified by design</div>
+                    </div>
+                    <div
+                        style="
+                            flex-shrink: 0;
+                            font-family: &quot;DM Mono&quot;, monospace;
+                            font-size: 0.75rem;
+                            color: var(--muted);
+                            line-height: 2;
+                            border-left: 1px solid var(--border);
+                            padding-left: 40px;
+                        "
+                    >
+                        <div style="color: var(--accent)">Data flow audit</div>
+                        <div>Message → <span style="color: #22c55e">Peer ✓</span></div>
+                        <div>Message → <span style="color: #ef4444">Server ✗</span></div>
+                        <div>Message → <span style="color: #ef4444">Database ✗</span></div>
+                        <div>Message → <span style="color: #ef4444">Logs ✗</span></div>
+                        <div>Message → <span style="color: #ef4444">Analytics ✗</span></div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <div id="floating-menu" class="absolute right-4 top-20 bg-white dark:bg-dark shadow-lg rounded-md w-48 z-50 hidden">
-        <button id="copy-id-btn" class="w-full text-left px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-800 text-md rounded-md">ID'yi Kopyala</button>
-        <button id="leave-btn" class="w-full text-left px-4 py-2 hover:bg-red-200 dark:hover:bg-red-800 text-md rounded-md hidden">Bağlantıyı Kes</button>
-    </div>
+        <!-- CTA -->
+        <section class="cta-section">
+            <div class="cta-glow"></div>
+            <div class="reveal">
+                <h2>Start a private<br />conversation.</h2>
+                <p>No account. No email. No phone number. Just download a key and you're in.</p>
+                <a href="https://pitopi.onrender.com/" class="btn-primary" style="font-size: 1rem; padding: 16px 36px"> Open Pitopi → </a>
+            </div>
+        </section>
 
-    <input type="file" id="uploadAvatarInput" accept="image/*" style="display: none;" />
-    <input type="file" id="fileInput" style="display: none;" />
-    <input type="file" id="storyInput" accept="image/*,video/*" style="display: none;" />
-    
-    <!-- Audio element for notifications -->
-    <audio id="notification-sound" preload="auto">
-        <source src="assets/notification.mp3" type="audio/mpeg">
-    </audio>
-    
-    <script defer src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
-    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
-    <script src="assets/app.js"></script>
-</body>
+        <footer>
+            <div class="footer-logo">Pitopi</div>
+            <ul class="footer-links">
+                <li><a href="help.html">Help</a></li>
+                <li><a href="donate.html">Donate</a></li>
+            </ul>
+            <div class="footer-copy">© 2026 Pitopi. Open source.</div>
+        </footer>
+
+        <script src="assets/script.js"></script>
+        <script>
+            const reveals = document.querySelectorAll(".reveal");
+            const observer = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach((e, i) => {
+                        if (e.isIntersecting) {
+                            setTimeout(() => e.target.classList.add("visible"), i * 60);
+                            observer.unobserve(e.target);
+                        }
+                    });
+                },
+                { threshold: 0.1 }
+            );
+
+            reveals.forEach((el) => observer.observe(el));
+        </script>
+    </body>
 </html>
-  
