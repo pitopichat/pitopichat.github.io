@@ -16,9 +16,6 @@
         <script src="https://cdn.tailwindcss.com"></script>
     </head>
     <body>
-        <div class="cursor" id="cursor"></div>
-        <div class="cursor-ring" id="cursorRing"></div>
-
         <nav>
             <a href="index.html" class="nav-logo">
                 <img src="https://aardaakpinar.github.io/assets/images/logos/pitopi.png" alt="Pitopi" />
@@ -49,8 +46,8 @@
             </h1>
 
             <p>
-                Pitopi enables real-time, peer-to-peer communication with no servers in between. Your messages never
-                touch our infrastructure.
+                Pitopi enables real-time, peer-to-peer communication. 
+                Your messages go directly to the other person no middleman, no interception.
             </p>
 
             <div class="hero-actions">
@@ -75,10 +72,6 @@
                     <div class="stat-label">Architecture</div>
                 </div>
                 <div class="stat">
-                    <div class="stat-value">0</div>
-                    <div class="stat-label">Logs Stored</div>
-                </div>
-                <div class="stat">
                     <div class="stat-value">E2E</div>
                     <div class="stat-label">Encrypted</div>
                 </div>
@@ -86,14 +79,7 @@
         </section>
 
         <!-- FEATURES -->
-        <section
-            style="
-                padding: 120px 0;
-                background: var(--surface);
-                border-top: 1px solid var(--border);
-                border-bottom: 1px solid var(--border);
-            "
-        >
+        <section class="features-section">
             <div class="section" style="padding-top: 0; padding-bottom: 0">
                 <div class="reveal">
                     <div class="section-tag">// Why Pitopi</div>
@@ -105,53 +91,58 @@
 
                 <div class="features-grid reveal">
                     <div class="feature-card">
-                        <div class="feature-icon">🔒</div>
-                        <div class="feature-title">Zero-Knowledge</div>
-                        <div class="feature-desc">
-                            We have no idea what you're talking about. Literally. Messages are encrypted before they
-                            leave your device.
-                        </div>
+                    <div class="feature-icon">🔒</div>
+                    <div class="feature-title">End-to-End Encrypted</div>
+                    <div class="feature-desc">
+                        Messages go directly between you and the other person
+                        they never touch our servers. We can't read them even if we wanted to.
                     </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">⚡</div>
-                        <div class="feature-title">Real-Time P2P</div>
-                        <div class="feature-desc">
-                            WebRTC creates a direct tunnel between you and your contact. No relay servers, no latency
-                            overhead.
-                        </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-title">Real-Time P2P</div>
+                    <div class="feature-desc">
+                        WebRTC creates a direct tunnel between you and your contact.
+                        No messages pass through our servers.
                     </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🗝️</div>
-                        <div class="feature-title">Key-Based Auth</div>
-                        <div class="feature-desc">
-                            No passwords, no emails, no phone numbers. A cryptographic key file is your identity — lose
-                            it and we can't help you recover it.
-                        </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🗝️</div>
+                    <div class="feature-title">Key-Based Auth</div>
+                    <div class="feature-desc">
+                        No passwords, no emails, no phone numbers. A cryptographic key file
+                        is your identity lose it and we can't help you recover it.
                     </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">📡</div>
-                        <div class="feature-title">Story Sharing</div>
-                        <div class="feature-desc">
-                            Share moments that disappear in 12 hours. Viewable by anyone on the network, stored nowhere
-                            permanently.
-                        </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📡</div>
+                    <div class="feature-title">Story Sharing</div>
+                    <div class="feature-desc">
+                        Share moments that disappear in 12 hours. Viewable by anyone
+                        on the network, not stored permanently.
                     </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🚫</div>
-                        <div class="feature-title">No Ads. Ever.</div>
-                        <div class="feature-desc">
-                            Your attention is not our product. Pitopi is free because we believe privacy should be
-                            accessible, not monetized.
-                        </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🚫</div>
+                    <div class="feature-title">No Ads. Ever.</div>
+                    <div class="feature-desc">
+                        Your attention is not our product. Pitopi is free because we believe
+                        privacy should be accessible, not monetized.
                     </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🌐</div>
-                        <div class="feature-title">Open Source</div>
-                        <div class="feature-desc">
-                            Every line of code is public. Audit it, fork it, improve it. Trust through transparency, not
-                            promises.
-                        </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <div class="feature-title">Open Source</div>
+                    <div class="feature-desc">
+                        Every line of code is public. Audit it, fork it, improve it.
+                        Trust through transparency, not promises.
                     </div>
+                </div>
                 </div>
             </div>
         </section>
@@ -205,64 +196,6 @@
                         <div class="terminal-title">pitopi</div>
                     </div>
                     <img class="terminal-body" src="assets/ss.png"></img>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECURITY -->
-        <section class="security-section">
-            <div class="reveal">
-                <div class="section-tag">// Security model</div>
-                <h2 class="section-title">Designed to be<br />uncompromising.</h2>
-            </div>
-
-            <div class="security-grid">
-                <div class="security-card reveal">
-                    <div class="security-icon">🛡️</div>
-                    <h3>Brute-Force Protection</h3>
-                    <p>
-                        Rate limiting and IP banning prevent automated attacks. After 5 failed attempts, access is
-                        suspended for 15 minutes.
-                    </p>
-                    <div class="security-badge">● Active</div>
-                </div>
-                <div class="security-card reveal">
-                    <div class="security-icon">📁</div>
-                    <h3>Exact-Byte Validation</h3>
-                    <p>
-                        Key files must be precisely 96 bytes. Anything else is rejected before parsing — no attack
-                        surface for malformed payloads.
-                    </p>
-                    <div class="security-badge">● Active</div>
-                </div>
-                <div class="security-card wide reveal">
-                    <div>
-                        <div class="security-icon">🔐</div>
-                        <h3>No Stored Messages</h3>
-                        <p>
-                            Pitopi's server facilitates the WebRTC handshake only. Once connected, all data flows
-                            directly between peers. We couldn't read your messages even if we wanted to.
-                        </p>
-                        <div class="security-badge">● Verified by design</div>
-                    </div>
-                    <div
-                        style="
-                            flex-shrink: 0;
-                            font-family: &quot;DM Mono&quot;, monospace;
-                            font-size: 0.75rem;
-                            color: var(--muted);
-                            line-height: 2;
-                            border-left: 1px solid var(--border);
-                            padding-left: 40px;
-                        "
-                    >
-                        <div style="color: var(--accent)">Data flow audit</div>
-                        <div>Message → <span style="color: #22c55e">Peer ✓</span></div>
-                        <div>Message → <span style="color: #ef4444">Server ✗</span></div>
-                        <div>Message → <span style="color: #ef4444">Database ✗</span></div>
-                        <div>Message → <span style="color: #ef4444">Logs ✗</span></div>
-                        <div>Message → <span style="color: #ef4444">Analytics ✗</span></div>
-                    </div>
                 </div>
             </div>
         </section>

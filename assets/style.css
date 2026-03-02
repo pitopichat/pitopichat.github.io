@@ -427,6 +427,12 @@ code {
 }
 
 /* INDEX — FEATURES */
+.features-section {
+    padding: 120px 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
 .features-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -485,15 +491,14 @@ code {
 /* INDEX — HOW IT WORKS */
 .how-section {
     padding: 120px 60px;
-    background: var(--surface);
     border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
 }
 .how-inner {
     max-width: 1200px;
     margin: 0 auto;
     display: grid;
     grid-template-columns: 1fr 1fr;
+    padding: 120px 60px;
     gap: 80px;
     align-items: center;
 }
@@ -572,67 +577,6 @@ code {
 .terminal-body {
     font-size: 0.78rem;
     line-height: 1.8;
-}
-
-/* INDEX — SECURITY */
-.security-section {
-    padding: 120px 60px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-.security-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    justify-content: center;
-    gap: 16px;
-    margin-top: 60px;
-}
-.security-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 32px;
-    transition: all 0.2s;
-}
-.security-card:hover {
-    border-color: rgba(79, 110, 247, 0.3);
-    transform: translateY(-2px);
-}
-.security-card.wide {
-    grid-column: span 2;
-    display: flex;
-    align-items: center;
-    gap: 40px;
-}
-.security-icon {
-    font-size: 2rem;
-    margin-bottom: 16px;
-}
-.security-card h3 {
-    font-family: "Syne", sans-serif;
-    font-weight: 700;
-    font-size: 1.1rem;
-    margin-bottom: 10px;
-}
-.security-card p {
-    font-size: 0.87rem;
-    color: var(--muted);
-    line-height: 1.65;
-}
-.security-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    background: rgba(34, 197, 94, 0.1);
-    border: 1px solid rgba(34, 197, 94, 0.2);
-    border-radius: 100px;
-    font-family: "DM Mono", monospace;
-    font-size: 0.65rem;
-    color: #22c55e;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-top: 12px;
 }
 
 /* INDEX — CTA */
